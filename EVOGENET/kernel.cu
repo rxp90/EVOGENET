@@ -138,32 +138,11 @@ __device__ void generate_v2(curandState* globalState, float * values, unsigned i
 
 }
 
-__device__ void generate_v3(curandState* globalState, int * values, unsigned int count, int max_value)
-{
-	int ind = blockIdx.x*blockDim.x + threadIdx.x;
-
-	curandState localState = globalState[ind];
-	for (int i = 0; i < count; i++){
-		values[i] = (int)(curand_uniform(&localState) * max_value);
-	}
-
-	globalState[ind] = localState;
-
-}
-
-
 __global__ void setup_kernel(curandState * state)
 {
 	int id = blockIdx.x*blockDim.x + threadIdx.x;
 	unsigned int seed = (unsigned int)clock64();
 	curand_init(seed, id, 0, &state[id]);
-}
-
-__global__ void setup_kernel_V2(curandState * state)
-{
-	int id = blockIdx.x*blockDim.x + threadIdx.x;
-	unsigned int seed = (unsigned int)clock64();
-	curand_init((seed << 20) + id, 0, 0, &state[id]);
 }
 
 __global__ void setup_kernel_V3(curandState * state)
@@ -172,23 +151,8 @@ __global__ void setup_kernel_V3(curandState * state)
 	unsigned int seed = (unsigned int)clock64();
 	curand_init(WangHash(seed) + id, 0, 0, &state[id]);
 }
-__global__ void setup_kernel_V4(curandState * state)
-{
-	int id = blockIdx.x*blockDim.x + threadIdx.x;
-	unsigned int seed = (unsigned int)clock64();
-	curand_init(WangHash(seed), id, 0, &state[id]);
-}
-__global__ void setup_kernel_V5(curandState * state)
-{
-	int id = blockIdx.x*blockDim.x + threadIdx.x;
-	unsigned int seed = (unsigned int)clock64();
-	curand_init(WangHash(seed) + id, id, 0, &state[id]);
-}
-/**
-* Shuffles the elements of a given array.
-* @param array Array to shuffle.
-* @param n Elements in the array.
-*/
+
+
 __device__  void shuffle(char *array, int n, curandState *globalState)
 {
 	int i = n - 1;
@@ -323,28 +287,23 @@ __device__ void apply_rules(char links[], int links_number, char rule, char node
 
 		}
 
-		//__syncthreads(); // TODO Puede que no sea necesario, pues se usa un warp por individuo (que son los nodos que necesito) y no es necesaria la sincronización dentro de un warp
-
 		char x1 = (input_count[0 + node_index * 3] > input_count[1 + node_index * 3]) - (input_count[0 + node_index * 3] < input_count[1 + node_index * 3]); // (+ > -) - ( + < -)
 		rules_to_states[MOST] = (-(x1 + 1)*(3 * x1 - 4)) >> 1;
 
-		char x2 = input_count[1 + node_index * 3]>0;
+		char x2 = input_count[1 + node_index * 3] > 0;
 		rules_to_states[ABSOLUTE_REPRESSOR] = 2 - (x2 << 1);
 
-		char x3 = input_count[0 + node_index * 3]>1;
+		char x3 = input_count[0 + node_index * 3] > 1;
 		rules_to_states[JOINT_ACTIVATORS] = 2 - x3;
 
-		char x4 = input_count[1 + node_index * 3]>1;
+		char x4 = input_count[1 + node_index * 3] > 1;
 		rules_to_states[JOINT_REPRESSORS] = 2 - (x4 << 1);
 
 		nodes[node_index] = states[rules_to_states[rule]];
-		__syncthreads(); // TODO Puede que no sea necesario, pues se usa un warp por individuo y no es neceesaria la sincronización dentro de un warp
+		__syncthreads(); // Not needed but increases performance. Due to bank conflicts?
 	}
 
 }
-
-
-
 
 __global__ void link_distance(network population[], float *distances, int size, char goal_links[]){
 
@@ -357,6 +316,32 @@ __global__ void link_distance(network population[], float *distances, int size, 
 		float distance = (population[individual].links[link] != goal_links[link]);
 		distance *= (1 - LAMBDA_VALUES[population_index]) / (NODES*MAX_INPUTS);
 		distances[IDX2C(individual, link, POPULATION)] = distance;
+	}
+}
+template <unsigned int links_per_node>
+__global__ void link_distance_v2(network population[], float *distances, int size, char goal_links[]){
+
+	const unsigned int index = threadIdx.x + blockDim.x * blockIdx.x;
+	const unsigned int individual = (index*links_per_node) / INDIVIDUAL_SIZE;
+	const unsigned int link = (index*links_per_node) % INDIVIDUAL_SIZE;
+	const unsigned int population_index = individual / (POPULATION / POPULATIONS);
+
+	char links[links_per_node];
+	char goal[links_per_node];
+
+	if (individual < POPULATION){
+		int2 *p = reinterpret_cast<int2*>(population[individual].links + link);
+		int2 links_vec = p[0];
+		reinterpret_cast<int2*>(links)[0] = links_vec;
+
+		int2 *p2 = reinterpret_cast<int2*>(goal_links + link);
+		int2 goal_vec = p2[0];
+		reinterpret_cast<int2*>(goal)[0] = goal_vec;
+		for (char i = 0; i < links_per_node; i++){
+			float distance = (links[i] != goal[i]);
+			distance *= (1 - LAMBDA_VALUES[population_index]) / (NODES*MAX_INPUTS);
+			distances[IDX2C(individual, link + i, POPULATION)] = distance;
+		}
 	}
 }
 template <unsigned int individuals_per_block>
@@ -388,23 +373,9 @@ __global__ void node_distance(network population[], float *distances, int size, 
 		for (int i = 0; i < 2; i++){
 			int4 *p = reinterpret_cast<int4*>(population[individual].links + node*MAX_INPUTS + i * 16);
 			int4 links_vec = p[0];
-			/*
-			char4 c0 = *reinterpret_cast<char4 *>(&links_vec.x);
-			char4 c4= *reinterpret_cast<char4 *>(&links_vec.y);
-			char4 c8 = *reinterpret_cast<char4 *>(&links_vec.z);
-			char4 c12 = *reinterpret_cast<char4 *>(&links_vec.w);
-
-			node_inputs[i*4 + 0] = c0.x;
-			node_inputs[i*4 + 1] = c4.x;
-			node_inputs[i*4 + 2] = c8.x;
-			node_inputs[i*4 + 3] = c12.x;*/
 			reinterpret_cast<int4*>(node_inputs)[i] = links_vec;
 		}
 
-		/*for (int i = 0; i < MAX_INPUTS; i++){
-		node_inputs[i] = population[individual].links[node*MAX_INPUTS + i];
-		}
-		*/
 		apply_rules<individuals_per_block>(node_inputs, MAX_INPUTS, rule, nodes, threadIdx.x);
 
 		float distance = (nodes[threadIdx.x] != goal_nodes[node]);
@@ -484,13 +455,10 @@ __global__ void mutation(network *population, int nodes, int max_inputs_per_node
 	int new_link_index, new_rule_index;
 
 	float randoms[6];
-	generate_v2(globalState, randoms, 6);	// V2 minimizes memory R/W
+	generate_v2(globalState, randoms, 6);
 
 	if (individual_index < POPULATION){
-		//network individual = population[individual_index];
-		//if (threadIdx.x < (POPULATION / 2)){
-		/* LINKS MUTATION */
-		// TODO considerar generar arrays de random, para minimizar escrituras en memoria cada vez
+
 		if (randoms[0] <= link_mut_prob)
 		{
 			link_index = randoms[1] * (nodes * max_inputs_per_node);
@@ -498,8 +466,6 @@ __global__ void mutation(network *population, int nodes, int max_inputs_per_node
 			new_link_index = randoms[2] * 2 + (link_to_change + 1) * 2;
 			population[individual_index].links[link_index] = links[new_link_index];
 		}
-		//	}
-		//	else{
 
 		if (randoms[3] <= rule_mut_prob)
 		{
@@ -508,14 +474,14 @@ __global__ void mutation(network *population, int nodes, int max_inputs_per_node
 			new_rule_index = randoms[5] * 3 + rule_to_change * 3;
 			population[individual_index].rules[rule_index] = rules[new_rule_index];
 		}
-		//	}
+
 	}
 
 }
 
 
 template <unsigned int blockSize>
-__device__ void calculeConnectivity_v7(volatile char links[], int size, float *connectivity){
+__device__ void calculeConnectivity(volatile char links[], int size, float *connectivity){
 
 	const unsigned int tid = threadIdx.x;
 
@@ -720,7 +686,7 @@ __global__ void generateRuleCrossoverindices(int *indices, curandState *globalSt
 }
 
 template <unsigned int blockSize, unsigned int offset>
-__global__ void crossover(network population[], int *indices_best, int *link_crossover_indices){		//Considerar usar memoria constante aqui
+__global__ void crossover(network population[], int *indices_best, int *link_crossover_indices){
 
 	const unsigned int population_index = (blockIdx.x * 2) / (POPULATION / POPULATIONS);
 	/*
@@ -747,7 +713,7 @@ __global__ void crossover(network population[], int *indices_best, int *link_cro
 
 	const char links_condition = (tid < link_crossover_index);
 
-	if (tid<INDIVIDUAL_SIZE){
+	if (tid < INDIVIDUAL_SIZE){
 		links_child_1[tid] = population[indices[!links_condition]].links[tid];
 		links_child_2[tid] = population[indices[links_condition]].links[tid];
 	}
@@ -758,7 +724,7 @@ __global__ void crossover(network population[], int *indices_best, int *link_cro
 
 	const char rules_condition = (tid >= rule_crossover_index);
 
-	if (tid<RULES_PER_NODE*NODES){
+	if (tid < RULES_PER_NODE*NODES){
 		rules_child_2[tid] = population[indices[!rules_condition]].rules[tid];
 	}
 	/*
@@ -801,7 +767,7 @@ __global__ void crossover(network population[], int *indices_best, int *link_cro
 	__shared__ float child_connectivity_1, child_connectivity_2;
 
 	/** Child 1 **/
-	calculeConnectivity_v7<blockSize>(links_child_1, NODES*MAX_INPUTS, &child_connectivity_1);
+	calculeConnectivity<blockSize>(links_child_1, NODES*MAX_INPUTS, &child_connectivity_1);
 
 	if (fabsf(child_connectivity_1 - INIT_CONNECTIVITY) < MAX_CONNECTIVITY_DISTANCE){
 		// Links
@@ -817,10 +783,9 @@ __global__ void crossover(network population[], int *indices_best, int *link_cro
 			population[indices[0]].rules[tid] = population[indices[1]].rules[tid];
 		}
 	}
-	// Sync?
 
 	/** Child 2 **/
-	calculeConnectivity_v7<blockSize>(links_child_2, NODES*MAX_INPUTS, &child_connectivity_2);
+	calculeConnectivity<blockSize>(links_child_2, NODES*MAX_INPUTS, &child_connectivity_2);
 
 	if (fabsf(child_connectivity_2 - INIT_CONNECTIVITY) < MAX_CONNECTIVITY_DISTANCE){
 		// Links
@@ -870,7 +835,6 @@ __global__ void roulette_selection(float pop_fitness[], int indices[], thrust::d
 
 	const unsigned int index = threadIdx.x + blockIdx.x*blockDim.x;
 	const unsigned int population_index = index / (POPULATION / POPULATIONS);
-	//	const unsigned int individual_index = index % (POPULATION/POPULATIONS);
 	const unsigned int pop_offset = POPULATION / POPULATIONS;
 
 	if (index < POPULATION){
@@ -892,7 +856,6 @@ __global__ void sus_selection(float pop_fitness[], int indices[], thrust::device
 
 	const unsigned int index = threadIdx.x + blockIdx.x*blockDim.x;
 	const unsigned int population_index = index / (POPULATION / POPULATIONS);
-	//	const unsigned int individual_index = index % (POPULATION/POPULATIONS);
 	const unsigned int pop_offset = POPULATION / POPULATIONS;
 
 	__shared__ float randoms[POPULATIONS];
@@ -928,40 +891,6 @@ __global__ void sus_selection(float pop_fitness[], int indices[], thrust::device
 
 }
 
-
-
-__global__ void migrate(network population[], int indices_best[]){
-	//One thread per individual
-	//int index = threadIdx.x + blockDim.x*blockIdx.x;
-	int index = blockIdx.x;
-	const unsigned int tid = threadIdx.x;
-	unsigned int elements_per_population = (ELEMENTS_TO_MIGRATE / POPULATIONS);
-	unsigned int pop_index = index / elements_per_population;
-	unsigned int offset = (ELITE_MEMBERS / POPULATIONS);
-	unsigned int offset_elements = (POPULATION / POPULATIONS) * 2 - elements_per_population;
-	unsigned int links_per_thread = INDIVIDUAL_SIZE / blockDim.x;
-
-	if (index < ELEMENTS_TO_MIGRATE){
-		unsigned int id_best = pop_index*offset + index%elements_per_population;
-		unsigned int id_worst = (id_best + offset_elements) % ELITE_MEMBERS;
-		unsigned int index_best = indices_best[id_best];
-		unsigned int index_worst = indices_best[id_worst];
-
-		for (int i = 0; i < links_per_thread; i++){
-			population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].links[tid*links_per_thread + i] = population[(pop_index*POPULATION / POPULATIONS) + index_best].links[tid*links_per_thread + i];
-		}
-		if (tid < NODES){		 // VS 32-63 para nodos? TODO
-			population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].nodes[tid] = population[(pop_index*POPULATION / POPULATIONS) + index_best].nodes[tid];
-			population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].rules[tid] = population[(pop_index*POPULATION / POPULATIONS) + index_best].rules[tid];
-		}
-		//	printf("\n%d (%d) <- %d (%d)\n", id_best, (pop_index+1)%ELITE_MEMBERS, id_worst, pop_index);
-		// memcpy(&population[index_worst + ((pop_index+1)*POPULATION/POPULATIONS)%POPULATION], &population[(pop_index*POPULATION/POPULATIONS) + index_best], sizeof(network));
-		// Links
-
-
-	}
-}
-
 template <unsigned int elements_per_population, unsigned int offset>
 __global__ void migrate_v2(network population[], int indices_best[]){
 
@@ -990,8 +919,8 @@ __global__ void migrate_v2(network population[], int indices_best[]){
 			break;
 		}
 
-		if (tid < NODES){		 // VS 32-63 para nodos? TODO
-			population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].nodes[tid] = population[(pop_index*POPULATION / POPULATIONS) + index_best].nodes[tid];
+		if (tid < NODES){
+			//	population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].nodes[tid] = population[(pop_index*POPULATION / POPULATIONS) + index_best].nodes[tid];
 			population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].rules[tid] = population[(pop_index*POPULATION / POPULATIONS) + index_best].rules[tid];
 		}
 
@@ -999,10 +928,10 @@ __global__ void migrate_v2(network population[], int indices_best[]){
 }
 
 void compute_fitness(cudaStream_t stream1, cudaStream_t stream2, network * d_population, float * link_distances, float * d_x_links, float * link_fitness, cublasHandle_t handle, float * node_distances, float * d_x_nodes, float * node_fitness, float * d_current_fitness, char goal_links[], char init_nodes[], char goal_nodes[]){
-	link_distance << <(POPULATION*NODES*MAX_INPUTS + 32 * 4 - 1) / (32 * 4), 32 * 4, 0, stream1 >> >(d_population, link_distances, POPULATION, goal_links);
+	link_distance_v2<8> << <(POPULATION*NODES*MAX_INPUTS / 8 + 32 * 4 - 1) / (32 * 4), 32 * 4 >> >(d_population, link_distances, POPULATION, goal_links);
 	gpuErrchk(cudaPeekAtLastError());
 
-	node_distance <4> << <(POPULATION*NODES + 4 * 32 - 1) / (32 * 4), 32 * 4, 0, stream2 >> >(d_population, node_distances, POPULATION, init_nodes, goal_nodes);
+	node_distance <4> << <(POPULATION*NODES + 4 * 32 - 1) / (32 * 4), 32 * 4 >> >(d_population, node_distances, POPULATION, init_nodes, goal_nodes);
 	gpuErrchk(cudaPeekAtLastError());
 
 	sum_link_distances(link_distances, d_x_links, link_fitness, NODES*MAX_INPUTS, POPULATION, handle);
