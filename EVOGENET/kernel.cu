@@ -53,21 +53,18 @@ struct inverse
 #define RULES_PER_NODE 1
 #define NODES 32
 #define POPULATION (1024*POPULATIONS)
-//#define LAMBDA 0.9
 #define ELITE_MEMBERS (POPULATION)
 #define ELEMENTS_TO_MIGRATE (2*POPULATIONS)
 #define MIGRATION_FREQUENCY 2
 
-#define INDIVIDUALS_PER_BLOCK 2
-
 #define MAX_CONNECTIVITY_DISTANCE 0.1
 
-#define GENERATIONS 200
+#define GENERATIONS 2000
 #define EXECUTIONS 1
 #define LINK_MUTATION_PROB 0.001  
 #define RULE_MUTATION_PROB 0.001
 
-#define INDIVIDUAL_SIZE (NODES * MAX_INPUTS)
+#define TOTAL_LINKS (NODES*MAX_INPUTS)
 
 #define ROULETTE 0
 #define ELITE 1
@@ -79,25 +76,27 @@ struct inverse
 
 typedef struct
 {
-	char nodes[NODES];
-	char links[NODES*MAX_INPUTS];
+	char links[TOTAL_LINKS];
 	char rules[RULES_PER_NODE*NODES];
 } network;
 
-__device__ const network INIT_NETWORK = {
-	{ 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1 },
-	{ 1, 0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
-};
-network INIT_NETWORK_HOST = {
-	{ 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1 },
-	{ 1, 0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
-};
-network GOAL_NETWORK_HOST = {
-	{ 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+const unsigned char H_INIT_NODES[NODES] = { 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1 };
+const unsigned char H_GOAL_NODES[NODES] = { 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+
+network population[POPULATION];
+
+__device__ const network INIT_NETWORK_DEVICE = {
 	{ 1, 0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
 };
 
-float LAMBDA_HOST[POPULATIONS] = { .9 };
+network INIT_NETWORK_HOST = {
+	{ 1, 0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
+};
+network GOAL_NETWORK_HOST = {
+	{ 1, 0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
+};
+
+float LAMBDA_HOST[POPULATIONS] = { .9f };
 
 __constant__ float LAMBDA_VALUES[POPULATIONS];
 
@@ -105,6 +104,12 @@ __constant__ float INIT_CONNECTIVITY;
 
 float BEST_FITNESS_HOST = 1.0;
 
+
+/// <summary>
+/// Simple hash function
+/// </summary>
+/// <param name="a">Number to hash</param>
+/// <returns>Hashed number</returns>
 __device__ unsigned int WangHash(unsigned int a){
 	a = (a ^ 61) ^ (a >> 16);
 	a = a + (a << 3);
@@ -114,6 +119,12 @@ __device__ unsigned int WangHash(unsigned int a){
 	return a;
 }
 
+
+/// <summary>
+/// Generates a random float number between [0,1)
+/// </summary>
+/// <param name="globalState">curandState of the thread.</param>
+/// <returns>Random float</returns>
 __device__ float generate(curandState* globalState)
 {
 	int ind = blockIdx.x*blockDim.x + threadIdx.x;
@@ -125,6 +136,13 @@ __device__ float generate(curandState* globalState)
 }
 
 
+/// <summary>
+/// Generates 'count' random float numbers between [0,1)
+/// </summary>
+/// <param name="globalState">curandState of the thread.</param>
+/// <param name="values">Generated values.</param>
+/// <param name="count">Number of values to generate.</param>
+/// <returns></returns>
 __device__ void generate_v2(curandState* globalState, float * values, unsigned int count)
 {
 	int ind = blockIdx.x*blockDim.x + threadIdx.x;
@@ -138,14 +156,24 @@ __device__ void generate_v2(curandState* globalState, float * values, unsigned i
 
 }
 
+/// <summary>
+/// Initializes cuRAND states with different sequence numbers per thread. If many states are created, it may be very slow.
+/// </summary>
+/// <param name="state">Pointer to allocated curandState.</param>
+/// <returns></returns>
 __global__ void setup_kernel(curandState * state)
 {
 	int id = blockIdx.x*blockDim.x + threadIdx.x;
-	unsigned int seed = (unsigned int)clock64();
+	unsigned int seed = 1234;
 	curand_init(seed, id, 0, &state[id]);
 }
 
-__global__ void setup_kernel_V3(curandState * state)
+/// <summary>
+/// Initializes cuRAND states with seed per thread. Much faster than setup_kernel.
+/// </summary>
+/// <param name="state">Pointer to allocated curandState.</param>
+/// <returns></returns>
+__global__ void setupCurandDiffSeed(curandState * state)
 {
 	int id = blockIdx.x*blockDim.x + threadIdx.x;
 	unsigned int seed = (unsigned int)clock64();
@@ -153,6 +181,13 @@ __global__ void setup_kernel_V3(curandState * state)
 }
 
 
+/// <summary>
+/// Shuffles the specified array.
+/// </summary>
+/// <param name="array">The array.</param>
+/// <param name="n">Size</param>
+/// <param name="globalState">curandState of the thread.</param>
+/// <returns></returns>
 __device__  void shuffle(char *array, int n, curandState *globalState)
 {
 	int i = n - 1;
@@ -168,6 +203,12 @@ __device__  void shuffle(char *array, int n, curandState *globalState)
 }
 
 
+/// <summary>
+/// Prints the specified char array.
+/// </summary>
+/// <param name="array">The array.</param>
+/// <param name="size">Size.</param>
+/// <returns></returns>
 __host__ __device__ void print_array(const char array[], int size)
 {
 	int i;
@@ -179,6 +220,13 @@ __host__ __device__ void print_array(const char array[], int size)
 	printf("%d", array[size - 1]);
 	printf("\n");
 }
+
+/// <summary>
+/// Prints the specified float array.
+/// </summary>
+/// <param name="array">The array.</param>
+/// <param name="size">Size</param>
+/// <returns></returns>
 __host__ __device__ void print_array_f(const float array[], int size)
 {
 	int i;
@@ -189,6 +237,14 @@ __host__ __device__ void print_array_f(const float array[], int size)
 	}
 	printf("]\n");
 }
+
+/// <summary>
+/// Prints the specified char array into a file.
+/// </summary>
+/// <param name="array">The array.</param>
+/// <param name="size">Size.</param>
+/// <param name="f">Output file.</param>
+/// <returns></returns>
 __host__ void print_array_file(const char array[], int size, FILE *f)
 {
 	int i;
@@ -200,24 +256,38 @@ __host__ void print_array_file(const char array[], int size, FILE *f)
 	fprintf(f, "};\n");
 }
 
-
+/// <summary>
+/// Prints both links and rules of a given chromosome.
+/// </summary>
+/// <param name="individual">The individual.</param>
+/// <returns></returns>
 __device__ __host__ void print_network(network individual)
 {
 	printf("--\n");
-	print_array(individual.nodes, NODES);
-	print_array(individual.links, NODES * MAX_INPUTS);
+	print_array(individual.links, TOTAL_LINKS);
 	print_array(individual.rules, RULES_PER_NODE * NODES);
 }
+
+/// <summary>
+/// Prints both links and rules of a given chromosome into a file.
+/// </summary>
+/// <param name="individual">The individual.</param>
+/// <param name="f">Output file.</param>
+/// <returns></returns>
 __host__ void print_network_file(network individual, FILE *f)
 {
-	fprintf(f, "\nNODES: ");
-	print_array_file(individual.nodes, NODES, f);
 	fprintf(f, "\nLINKS: ");
-	print_array_file(individual.links, NODES * MAX_INPUTS, f);
+	print_array_file(individual.links, TOTAL_LINKS, f);
 	fprintf(f, "\nRULES: ");
 	print_array_file(individual.rules, RULES_PER_NODE * NODES, f);
 }
 
+/// <summary>
+/// Prints an entire population.
+/// </summary>
+/// <param name="population">The population.</param>
+/// <param name="population_size">Number of individuals.</param>
+/// <returns></returns>
 __device__ __host__ void print_population(network population[], int population_size)
 {
 	int i;
@@ -225,10 +295,15 @@ __device__ __host__ void print_population(network population[], int population_s
 	for (i = 0; i < population_size; ++i)
 	{
 		print_network(population[i]);
-		//  printf("Fitness value: %f\n",evaluate_individual(&population[i], &GOAL_NETWORK_HOST, MAX_INPUTS, NODES, LAMBDA,0));
 	}
 	printf("---------------------------------------------------\n");
 }
+
+/// <summary>
+/// Shows the algorithm's progress.
+/// </summary>
+/// <param name="progress">The progress.</param>
+/// <param name="best">Fitness of the best individual.</param>
 void inline print_progress(float progress, float best)
 {
 	if (progress < 1.0)
@@ -244,90 +319,166 @@ void inline print_progress(float progress, float best)
 			else if (i == pos) printf("%c", '>');
 			else printf("%c", ' ');
 		}
-		// printf("] %.1f%\r", progress * 100.0);
+
 		printf("] %.2f -- Best: %.8f\r", progress * 100, best);
 
 		fflush(stdout);
 	}
 }
 
-void print_parameters(){
+/// <summary>
+/// Prints the algorithm's current parameters.
+/// </summary>
+void printParameters(){
 	unsigned int width = 35;
 	printf("TOTAL POPULATION: %*d\n", width, POPULATION);
 	printf("ISLANDS (POPULATIONS): %*d\n", width, POPULATIONS);
 	printf("MIGRATIONS/ISLAND: %*d\n", width, ELEMENTS_TO_MIGRATE / POPULATIONS);
 	printf("MIGRATION FREQUENCY: %*d\n", width, MIGRATION_FREQUENCY);
-	//printf("LAMBDA: \t%*.3f\n", width, LAMBDA);
 	printf("LINK MUTATION PROB: %*.3f\n", width, LINK_MUTATION_PROB);
 	printf("RULE MUTATION PROB: %*.3f\n", width, RULE_MUTATION_PROB);
 	printf("GENERATIONS: %*d\n", width, GENERATIONS);
 }
 
 
-template <unsigned int individuals_per_block>
-__device__ void apply_rules(char links[], int links_number, char rule, char nodes[], unsigned int node_index)
+/// <summary>
+/// Applies the given rule to a node until a stable state is reached.
+/// </summary>
+/// <param name="links">Node inputs.</param>
+/// <param name="rule">The rule.</param>
+/// <param name="nodes">At least, all the nodes of an individual.</param>
+/// <param name="node_index">Node index into nodes[].</param>
+/// <returns></returns>
+template <unsigned int individualsPerBlock>
+__device__ void applyRules(char links[], char rule, char nodes[], unsigned int node_index)
 {
 
-	__shared__ char input_count[3 * individuals_per_block*NODES];
+	/*
+	Three positions per thread.
+	[0] = activator
+	[1] = repressor
+	[2] = null/invalid link
+	*/
+	__shared__ char sharedInputCount[3 * individualsPerBlock*NODES];
 
-	char a, count_index;
+	/*
+	Considers only links coming from active nodes.
+	*/
+	char validLinkValue;
+	/*
+	Index to increase. Offset must be added.
+	0 = activator
+	1 = repressor
+	2 = null/invalid link
+	*/
+	char inputCountIndex;
 
+	/*
+	New possible states depending on the input count result.
+	[0] = node deactivated
+	[1] = node activated
+	[2] = not changed
+	*/
 	char states[3] = { 0, 1, nodes[node_index] };
+	/*
+	Index within states[] if [rule] is applied.
+	states[MOST] = New state if rule of the most is applied.
+	states[ABSOLUTE_REPRESSOR] = New state if absolute repressor rule is applied.
+	states[JOINT_ACTIVATORS] = New state if joint activators rule is applied.
+	states[JOINT_REPRESSORS] = New state if joint repressors rule is applied.
 
-	char rules_to_states[4];
+	This double-pointer approach is used because a node may preserve its state.
+	*/
+	char ruleIndexedStates[4];
 
-	for (char j = 0; j < 5; j++){
-		for (char i = 0; i < links_number; i++)
+	const char stableState = 5;
+
+	for (char j = 0; j < stableState; j++){
+
+		// Reset counters
+		sharedInputCount[0 + node_index * 3] = 0;
+		sharedInputCount[1 + node_index * 3] = 0;
+		sharedInputCount[2 + node_index * 3] = 0;
+
+		// Inputs count
+		for (char i = 0; i < MAX_INPUTS; i++)
 		{
-			a = (links[i] * nodes[i + (node_index >> 5)*NODES]);
+			validLinkValue = (links[i] * nodes[i + (node_index >> 5)*NODES]);
 
-			count_index = (-(a - 1)*(3 * a + 4)) >> 1;
+			inputCountIndex = (-(validLinkValue - 1)*(3 * validLinkValue + 4)) >> 1;
 
-			input_count[count_index + node_index * 3]++;
-
+			sharedInputCount[inputCountIndex + node_index * 3]++;
 		}
 
-		char x1 = (input_count[0 + node_index * 3] > input_count[1 + node_index * 3]) - (input_count[0 + node_index * 3] < input_count[1 + node_index * 3]); // (+ > -) - ( + < -)
-		rules_to_states[MOST] = (-(x1 + 1)*(3 * x1 - 4)) >> 1;
+		// Generate index to all posible states
+		char indexToMostNewState = (sharedInputCount[0 + node_index * 3] > sharedInputCount[1 + node_index * 3]) - (sharedInputCount[0 + node_index * 3] < sharedInputCount[1 + node_index * 3]); // (+ > -) - ( + < -)
+		ruleIndexedStates[MOST] = (-(indexToMostNewState + 1)*(3 * indexToMostNewState - 4)) >> 1;
 
-		char x2 = input_count[1 + node_index * 3] > 0;
-		rules_to_states[ABSOLUTE_REPRESSOR] = 2 - (x2 << 1);
+		char indexToAbsReprNewState = sharedInputCount[1 + node_index * 3] > 0;
+		ruleIndexedStates[ABSOLUTE_REPRESSOR] = 2 - (indexToAbsReprNewState << 1);
 
-		char x3 = input_count[0 + node_index * 3] > 1;
-		rules_to_states[JOINT_ACTIVATORS] = 2 - x3;
+		char indexToJointActNewState = sharedInputCount[0 + node_index * 3] > 1;
+		ruleIndexedStates[JOINT_ACTIVATORS] = 2 - indexToJointActNewState;
 
-		char x4 = input_count[1 + node_index * 3] > 1;
-		rules_to_states[JOINT_REPRESSORS] = 2 - (x4 << 1);
+		char indexToJointReprNewState = sharedInputCount[1 + node_index * 3] > 1;
+		ruleIndexedStates[JOINT_REPRESSORS] = 2 - (indexToJointReprNewState << 1);
 
-		nodes[node_index] = states[rules_to_states[rule]];
+		// Change node state
+		nodes[node_index] = states[2] = states[ruleIndexedStates[rule]];
+
 		__syncthreads(); // Not needed but increases performance. Due to bank conflicts?
 	}
 
 }
 
-__global__ void link_distance(network population[], float *distances, int size, char goal_links[]){
+/// <summary>
+/// Calculates normalized single link distance and saves it into an column-major ordered array.
+/// </summary>
+/// <param name="population">The population.</param>
+/// <param name="distances">Column-major ordered array to hold the distances.</param>
+/// <param name="goal_links">The goal links.</param>
+/// <returns></returns>
+template <unsigned int links_per_node>
+__global__ void linkDistance(network population[], float *distances, char goal_links[]){
 
 	const unsigned int index = threadIdx.x + blockDim.x * blockIdx.x;
-	const unsigned int individual = index / INDIVIDUAL_SIZE;
-	const unsigned int link = index % INDIVIDUAL_SIZE;
-	const unsigned int population_index = individual / (POPULATION / POPULATIONS);
+	const unsigned int individual = (index*links_per_node) / TOTAL_LINKS;
+	const unsigned int link = (index*links_per_node) % TOTAL_LINKS;
+	const unsigned int populationIndex = individual / (POPULATION / POPULATIONS);
+
+	char links[links_per_node];
+	char goal[links_per_node];
 
 	if (individual < POPULATION){
-		float distance = (population[individual].links[link] != goal_links[link]);
-		distance *= (1 - LAMBDA_VALUES[population_index]) / (NODES*MAX_INPUTS);
-		distances[IDX2C(individual, link, POPULATION)] = distance;
+
+		// Vectorized memory load to increase performance
+		int2 *p = reinterpret_cast<int2*>(population[individual].links + link);
+		int2 links_vec = p[0];
+		reinterpret_cast<int2*>(links)[0] = links_vec;
+
+		int2 *p2 = reinterpret_cast<int2*>(goal_links + link);
+		int2 goal_vec = p2[0];
+		reinterpret_cast<int2*>(goal)[0] = goal_vec;
+
+		for (char i = 0; i < links_per_node; i++){
+			float distance = (links[i] != goal[i]);
+			distance *= (1 - LAMBDA_VALUES[populationIndex]) / (TOTAL_LINKS);
+			distances[IDX2C(individual, link + i, POPULATION)] = distance;
+		}
+
 	}
 }
 template <unsigned int links_per_node>
-__global__ void link_distance_v2(network population[], float *distances, int size, char goal_links[]){
+__global__ void link_distance_v3(network population[], float *distances, int size, char goal_links[]){
 
 	const unsigned int index = threadIdx.x + blockDim.x * blockIdx.x;
-	const unsigned int individual = (index*links_per_node) / INDIVIDUAL_SIZE;
-	const unsigned int link = (index*links_per_node) % INDIVIDUAL_SIZE;
+	const unsigned int individual = (index*links_per_node) / TOTAL_LINKS;
+	const unsigned int link = (index*links_per_node) % TOTAL_LINKS;
 	const unsigned int population_index = individual / (POPULATION / POPULATIONS);
 
 	char links[links_per_node];
 	char goal[links_per_node];
+	float distances_local[links_per_node];
 
 	if (individual < POPULATION){
 		int2 *p = reinterpret_cast<int2*>(population[individual].links + link);
@@ -337,142 +488,229 @@ __global__ void link_distance_v2(network population[], float *distances, int siz
 		int2 *p2 = reinterpret_cast<int2*>(goal_links + link);
 		int2 goal_vec = p2[0];
 		reinterpret_cast<int2*>(goal)[0] = goal_vec;
+
 		for (char i = 0; i < links_per_node; i++){
-			float distance = (links[i] != goal[i]);
-			distance *= (1 - LAMBDA_VALUES[population_index]) / (NODES*MAX_INPUTS);
-			distances[IDX2C(individual, link + i, POPULATION)] = distance;
+			distances_local[i] = (links[i] != goal[i]);
+			distances_local[i] *= (1 - LAMBDA_VALUES[population_index]) / (TOTAL_LINKS);
+		}
+		for (char j = 0; j < 2; j++){
+			float4 *p3 = reinterpret_cast<float4*>(distances_local + j * 4);
+			float4 dist_vec = p3[0];
+			reinterpret_cast<float4*>(distances)[IDX2C(individual, link, POPULATION) + j] = dist_vec;
 		}
 	}
 }
-template <unsigned int individuals_per_block>
-__global__ void node_distance(network population[], float *distances, int size, char init_nodes[], char goal_nodes[]){
+
+/// <summary>
+/// Calculates normalized single node distance and saves it into an column-major ordered array.
+/// </summary>
+/// <param name="population">The population.</param>
+/// <param name="distances">Column-major ordered array to hold the distances.</param>
+/// <param name="init_nodes">The initial nodes.</param>
+/// <param name="goal_nodes">The goal nodes.</param>
+/// <returns></returns>
+template <unsigned int individualsPerBlock>
+__global__ void nodeDistance(network population[], float *distances, char init_nodes[], char goal_nodes[]){
 
 	const unsigned char node = threadIdx.x % NODES;
 
-	__shared__ char nodes[individuals_per_block*NODES];
+	__shared__ char nodes[individualsPerBlock*NODES];
+
+	/*
+	Offset within the total population.
+	*/
 	__shared__ unsigned int offset;
 
-	char node_inputs[MAX_INPUTS];
+	char nodeInputs[MAX_INPUTS];
 
 	if (threadIdx.x == 0){
-		offset = blockIdx.x * individuals_per_block;
+		offset = blockIdx.x * individualsPerBlock;
 	}
 
 	__syncthreads();
 
+	// Node state is not saved between generations, so it's retrieved from the initial network
 	nodes[threadIdx.x] = init_nodes[node];
 
 	const unsigned int individual = (threadIdx.x / NODES) + offset;
-	const unsigned int population_index = individual / (POPULATION / POPULATIONS);
+	const unsigned int populationIndex = individual / (POPULATION / POPULATIONS);
 
 	if (individual < POPULATION){
 
 		const unsigned char rule = population[individual].rules[node];
 
-		//TODO En la primera iteracion puedo calcular directamente represores y activadores
+		//TO-DO En la primera iteracion puedo calcular directamente represores y activadores
+		// Retrieve all 32 inputs in two 16-char read loads
 		for (int i = 0; i < 2; i++){
 			int4 *p = reinterpret_cast<int4*>(population[individual].links + node*MAX_INPUTS + i * 16);
 			int4 links_vec = p[0];
-			reinterpret_cast<int4*>(node_inputs)[i] = links_vec;
+			reinterpret_cast<int4*>(nodeInputs)[i] = links_vec;
 		}
 
-		apply_rules<individuals_per_block>(node_inputs, MAX_INPUTS, rule, nodes, threadIdx.x);
+		// Apply rules in shared memory, since node state is not saved
+		applyRules<individualsPerBlock>(nodeInputs, rule, nodes, threadIdx.x);
 
 		float distance = (nodes[threadIdx.x] != goal_nodes[node]);
-		distance *= LAMBDA_VALUES[population_index] / NODES;
+		distance *= LAMBDA_VALUES[populationIndex] / NODES;
 		distances[IDX2C(individual, node, POPULATION)] = distance;
 	}
 }
 
-cublasStatus_t sum_link_distances(const float* A, const float* d_x, float* d_y, const int row, const int col, cublasHandle_t handle){
+/// <summary>
+/// Sums all the single link distances, so we obtain the total link fitness per individual.
+/// </summary>
+/// <param name="singleLinkDistances">Single link distances matrix.</param>
+/// <param name="onesVector">Vector of TOTAL_LINKS size filled with ones</param>
+/// <param name="linkFitnessPerIndividual">Vector to hold the link fitness per individual.</param>
+/// <param name="row">Number of rows of singleLinkDistances, that is, INVIDIDUAL_SIZE</param>
+/// <param name="col">Number of columns of singleLinkDistances, that is, POPULATION.</param>
+/// <param name="handle">cublasHandle</param>
+/// <returns>Error status</returns>
+cublasStatus_t sumSingleLinkDistances(const float* singleLinkDistances, const float* onesVector, float* linkFitnessPerIndividual, const int row, const int col, cublasHandle_t handle){
+
+	// Level 2 calculation y = alpha * A * x + beta * y
+	float alf = 1.f;
+	float beta = 0.f;
+
+	return cublasSgemv(handle, CUBLAS_OP_N, col, row, &alf, singleLinkDistances, col, onesVector, 1, &beta, linkFitnessPerIndividual, 1);//swap col and row
+}
+
+/// <summary>
+/// Sums all the single node distances, so we obtain the total node fitness per individual.
+/// </summary>
+/// <param name="singleNodeDistances">Single node distances matrix.</param>
+/// <param name="onesVector">Vector of NODES size filled with ones.</param>
+/// <param name="nodeFitnessPerIndividual">Vector to hold the node fitness per individual.</param>
+/// <param name="row">Number of rows of singleNodeDistances, that is, NODES</param>
+/// <param name="col">Number of columns of singleNodeDistances, that is, POPULATION.</param>
+/// <param name="handle">cublasHandle</param>
+/// <returns>Error status</returns>
+cublasStatus_t sumSingleNodeDistances(const float* singleNodeDistances, const float* onesVector, float* nodeFitnessPerIndividual, const int row, const int col, cublasHandle_t handle){
 
 	// level 2 calculation y = alpha * A * x + beta * y
 	float alf = 1.f;
 	float beta = 0.f;
 
-	return cublasSgemv(handle, CUBLAS_OP_N, col, row, &alf, A, col, d_x, 1, &beta, d_y, 1);//swap col and row
-}
-
-cublasStatus_t sum_fitness(const float* fitness, float* result, cublasHandle_t handle){
-
-	return cublasSasum(handle, POPULATION, fitness, 1, result);
-}
-
-cublasStatus_t sum_node_distances(const float* A, const float* d_x, float* d_y, const int row, const int col, cublasHandle_t handle){
-
-	// level 2 calculation y = alpha * A * x + beta * y
-	float alf = 1.f;
-	float beta = 0.f;
-
-	return cublasSgemv(handle, CUBLAS_OP_N, col, row, &alf, A, col, d_x, 1, &beta, d_y, 1);//swap col and row
+	return cublasSgemv(handle, CUBLAS_OP_N, col, row, &alf, singleNodeDistances, col, onesVector, 1, &beta, nodeFitnessPerIndividual, 1);//swap col and row
 
 }
-cublasStatus_t pop_fitness(const float* link_distances, const float* node_distances, float* fitness, cublasHandle_t handle){
 
-	// level 2 calculation y = alpha * A * x + beta * y
+/// <summary>
+/// Sums link and node fitness obtaining fitness per individual.
+/// </summary>
+/// <param name="linkFitness">Link fitness per individual.</param>
+/// <param name="nodeFitness">Node fitness per individual.</param>
+/// <param name="populationFitness">Total fitness per individual.</param>
+/// <param name="handle">cublasHandle</param>
+/// <returns>Error status</returns>
+cublasStatus_t populationFitness(const float* linkFitness, const float* nodeFitness, float* populationFitness, cublasHandle_t handle){
+
 	float alf = 1.f;
 	float beta = 1.f;
-	return cublasSgeam(handle, CUBLAS_OP_N, CUBLAS_OP_N, POPULATION, 1, &alf, link_distances, POPULATION, &beta, node_distances, POPULATION, fitness, POPULATION);
+	return cublasSgeam(handle, CUBLAS_OP_N, CUBLAS_OP_N, POPULATION, 1, &alf, linkFitness, POPULATION, &beta, nodeFitness, POPULATION, populationFitness, POPULATION);
 
 }
 
-__device__ void generate_rules(char rules[], int size, curandState * globalState)
+/// <summary>
+/// Generates random rules per individual.
+/// </summary>
+/// <param name="individualRules">The individual rules.</param>
+/// <param name="size">Number of rules to generate.</param>
+/// <param name="globalState">curandState.</param>
+/// <returns></returns>
+__device__ void generateRandomRules(char individualRules[], int size, curandState * globalState)
 {
 	int i, rule;
 	float randoms[RULES_PER_NODE*NODES];
 	generate_v2(globalState, randoms, RULES_PER_NODE*NODES);
 	for (i = 0; i < size; i++)
 	{
-		rule = randoms[i] * 4;
-		rules[i] = rule; /* Four possible rules */
+		rule = randoms[i] * 4;	// Four possible rules
+		individualRules[i] = rule;
 	}
 }
 
 
-__global__ void generate_individual(network population[], int nodes, int max_inputs, int rules_per_node, curandState* globalState)
+/// <summary>
+/// Generates the initial population.
+/// </summary>
+/// <param name="population">The population.</param>
+/// <param name="globalState">curandState</param>
+/// <returns></returns>
+__global__ void generateInitialPopulation(network population[], curandState* globalState)
 {
 
-	int i = threadIdx.x + blockDim.x*blockIdx.x;
-	// TODO ¿individuo en local?
-	if (i < POPULATION){
-		population[i] = INIT_NETWORK;
-		shuffle(population[i].links, max_inputs * nodes, globalState);
-		generate_rules(population[i].rules, rules_per_node * nodes, globalState);
+	const unsigned int index = threadIdx.x + blockDim.x*blockIdx.x;
+
+	network individual;
+
+	if (index < POPULATION){
+		// Copy and shuffle initial links
+		individual = INIT_NETWORK_DEVICE;
+		shuffle(individual.links, MAX_INPUTS * NODES, globalState);
+		// Generate random rules
+		generateRandomRules(individual.rules, RULES_PER_NODE * NODES, globalState);
+		// Save to device memory
+		population[index] = individual;
 	}
 
 }
 
-__global__ void mutation(network *population, int nodes, int max_inputs_per_node, int rules_per_node, float link_mut_prob, float rule_mut_prob, curandState *globalState)
+/// <summary>
+/// Mutates every individual of the population within a probability.
+/// </summary>
+/// <param name="population">The population.</param>
+/// <param name="globalState">curandState</param>
+/// <returns></returns>
+__global__ void mutation(network *population, curandState *globalState)
 {
 
 	const unsigned int individual_index = (blockIdx.x*blockDim.x + threadIdx.x);
 
-	const char rules[] = { 1, 2, 3, 0, 2, 3, 0, 1, 3, 0, 1, 2 };
+	const unsigned char rules[] = { 1, 2, 3, 0, 2, 3, 0, 1, 3, 0, 1, 2 };
 	const char links[] = { 0, 1, 1, -1, 0, -1 };
-
-	char link_to_change, rule_to_change;
-	int link_index, rule_index;
-	int new_link_index, new_rule_index;
+	/*
+	Old values that will mutate into new ones.
+	*/
+	char oldLinkValue, oldRuleValue;
+	/*
+	Random indexes.
+	*/
+	unsigned int individualLinkIndex, individualRuleIndex;
+	/*
+	Indexes for the local links and rules arrays.
+	*/
+	unsigned char localLinkIndex, localRuleIndex;
 
 	float randoms[6];
 	generate_v2(globalState, randoms, 6);
 
 	if (individual_index < POPULATION){
 
-		if (randoms[0] <= link_mut_prob)
+		if (randoms[0] <= LINK_MUTATION_PROB)
 		{
-			link_index = randoms[1] * (nodes * max_inputs_per_node);
-			link_to_change = population[individual_index].links[link_index];
-			new_link_index = randoms[2] * 2 + (link_to_change + 1) * 2;
-			population[individual_index].links[link_index] = links[new_link_index];
+			// Random link position
+			individualLinkIndex = randoms[1] * (TOTAL_LINKS);
+			// Previous link value
+			oldLinkValue = population[individual_index].links[individualLinkIndex];
+			// Index of the new value within the links array
+			// Index returned will point a different value from old one. E.g. oldLink = 1, localLinkIndex = [4,5] -> new value = [0,-1]
+			localLinkIndex = randoms[2] * 2 + (oldLinkValue + 1) * 2;
+			// Save the changes
+			population[individual_index].links[individualLinkIndex] = links[localLinkIndex];
 		}
 
-		if (randoms[3] <= rule_mut_prob)
+		if (randoms[3] <= RULE_MUTATION_PROB)
 		{
-			rule_index = randoms[4] * rules_per_node * nodes;
-			rule_to_change = population[individual_index].rules[rule_index];
-			new_rule_index = randoms[5] * 3 + rule_to_change * 3;
-			population[individual_index].rules[rule_index] = rules[new_rule_index];
+			// Random rule position
+			individualRuleIndex = randoms[4] * RULES_PER_NODE*NODES;
+			// Previous rule value
+			oldRuleValue = population[individual_index].rules[individualRuleIndex];
+			// Index of the new value within the rules array
+			// Index returned will point a different value from old one. E.g. oldRule = 1, localRuleIndex = [3,4,5] -> new value = [0,2,3]
+			localRuleIndex = randoms[5] * 3 + oldRuleValue * 3;
+			// Save the changes
+			population[individual_index].rules[individualRuleIndex] = rules[localRuleIndex];
 		}
 
 	}
@@ -481,26 +719,36 @@ __global__ void mutation(network *population, int nodes, int max_inputs_per_node
 
 
 template <unsigned int blockSize>
-__device__ void calculeConnectivity(volatile char links[], int size, float *connectivity){
+/// <summary>
+/// Calcules the connectivity of a given individual using a reduction.
+/// </summary>
+/// <param name="links">The links.</param>
+/// <param name="connectivity">Connectivity result.</param>
+/// <returns></returns>
+__device__ void calculeConnectivity(char links[], float *connectivity){
 
 	const unsigned int tid = threadIdx.x;
 
-	__shared__ char sdata[INDIVIDUAL_SIZE / 2];
+	__shared__ char sdata[TOTAL_LINKS / 2];
 
-	int mySum;
+	/*
+	Sum of existing links.
+	*/
+	unsigned int mySum;
 
-	if (tid < size){
+	if (tid < TOTAL_LINKS){
 		mySum = links[tid] != 0;
 	}
 
-	if (tid + blockSize < size){
-		mySum += (int)(links[tid + blockSize] != 0);
+	if (tid + blockSize < TOTAL_LINKS){
+		mySum += (links[tid + blockSize] != 0);
 	}
 
 	sdata[tid] = mySum;
+
 	__syncthreads();
 
-	// do reduction in shared mem
+	// Do reduction in shared mem
 	if ((blockSize >= 512) && (tid < 256))
 	{
 		sdata[tid] = mySum = mySum + sdata[tid + 256];
@@ -536,7 +784,7 @@ __device__ void calculeConnectivity(volatile char links[], int size, float *conn
 		}
 	}
 #else
-	// fully unroll reduction within a single warp
+	// Fully unroll reduction within a single warp
 	if ((blockSize >= 64) && (tid < 32))
 	{
 		sdata[tid] = mySum = mySum + sdata[tid + 32];
@@ -580,10 +828,11 @@ __device__ void calculeConnectivity(volatile char links[], int size, float *conn
 	__syncthreads();
 #endif
 
+	// Write value
 	if (tid == 0){
-		*connectivity = ((float)mySum) / size;
+		*connectivity = ((float)mySum) / TOTAL_LINKS;
 	}
-	__syncthreads();	// ¿Necesario?
+	__syncthreads();
 }
 
 __global__ void sus_selection_v1(float population_fitness[], float total_fitness, int parents, int indices[], curandState *globalState)
@@ -618,111 +867,131 @@ __global__ void sus_selection_v1(float population_fitness[], float total_fitness
 	}
 }
 
-__global__ void min(network population[], float* elements, int size, int generation, float *BEST_INDIVIDUAL_FITNESS, network * BEST_INDIVIDUAL){
+/// <summary>
+/// Updates the best individual and writes the current best fitness into a file.
+/// </summary>
+/// <param name="population">The population.</param>
+/// <param name="populationFitness">The population fitness.</param>
+/// <param name="generation">Current generation</param>
+/// <param name="f">Output file.</param>
+/// <param name="bestFitness">The best fitness.</param>
+/// <param name="bestIndividual">The best individual.</param>
+void updateBestIndividual(network population[], thrust::device_ptr<float> populationFitness, int generation, FILE *f, float * bestFitness, network * bestIndividual){
 
-	float min = 1;
-	int index = 0;
-	for (int i = 0; i<size; i++){
-		if (min>elements[i]){
-			min = elements[i];
-			index = i;
-		}
-	}
-	if (min < *(BEST_INDIVIDUAL_FITNESS)){
-		*BEST_INDIVIDUAL_FITNESS = min;
-		*BEST_INDIVIDUAL = population[index];
-		//	print_network(population[index]);
-	}
-
-	//print_network(population[index]);
-}
-
-void min_v2(network population[], thrust::device_ptr<float> fitness, thrust::device_ptr<float> min_ptr, int generation, FILE *f, float * best_fitness, network * best_individual){
-
+	thrust::device_ptr<float> min_ptr = thrust::min_element(populationFitness, populationFitness + POPULATION);
+	// Best fitness
 	float min = min_ptr[0];
-	int position = thrust::distance(fitness, min_ptr);
 
-	if (min < *(best_fitness)){
-		*best_fitness = min;
+	// Index of the individual with the best fitness
+	int position = thrust::distance(populationFitness, min_ptr);
 
+	// Update if current fitness is better than the previous one
+	if (min < *(bestFitness)){
+		*bestFitness = min;
 		HANDLE_ERROR(
-			cudaMemcpy(best_individual, population + position, sizeof(network), cudaMemcpyDeviceToHost)
+			cudaMemcpy(bestIndividual, population + position, sizeof(network), cudaMemcpyDeviceToHost)
 			);
-
 	}
 
-	fprintf(f, "%d,%.8f\n", generation, *best_fitness);
+	// Write to file
+	fprintf(f, "%d,%.8f\n", generation, *bestFitness);
 
 }
 
-void sort_population(thrust::device_ptr<float> keys, thrust::device_ptr<int> indices){
+/// <summary>
+/// Sorts an indices array according to the population(s) fitness, so the resulting order will be accord their fitness (best-first order).
+/// </summary>
+/// <param name="populationFitness">The population fitness.</param>
+/// <param name="indices">The indices.</param>
+void sort_population(thrust::device_ptr<float> populationFitness, thrust::device_ptr<int> indices){
 
 	for (int i = 0; i < (POPULATIONS); i++){
-		thrust::sort_by_key(keys + i*POPULATION / POPULATIONS, keys + (i + 1)*POPULATION / POPULATIONS, indices + i*POPULATION / POPULATIONS);
+		thrust::sort_by_key(populationFitness + i*POPULATION / POPULATIONS, populationFitness + (i + 1)*POPULATION / POPULATIONS, indices + i*POPULATION / POPULATIONS);
 	}
 
 }
 
+/// <summary>
+/// Resets the indices array. If more than one population exists, each will start from zero.
+/// </summary>
+/// <param name="indices">The indices.</param>
+/// <returns></returns>
 __global__ void sequence(int * indices){
-	int index = threadIdx.x + blockDim.x*blockIdx.x;
+	const unsigned int index = threadIdx.x + blockDim.x*blockIdx.x;
 	if (index < POPULATION){
 		indices[index] = index % (POPULATION / POPULATIONS);
 	}
 }
 
-__global__ void generateLinkCrossoverindices(int *indices, curandState *globalState){
-	int index = threadIdx.x + blockDim.x *blockIdx.x;
+/// <summary>
+/// Generates random link crossover points.
+/// </summary>
+/// <param name="points">The points.</param>
+/// <param name="globalState">curandState.</param>
+/// <returns></returns>
+__global__ void generateLinkCrossPoints(int *points, curandState *globalState){
+	const unsigned int index = threadIdx.x + blockDim.x *blockIdx.x;
 	int N = ELITE_MEMBERS / 2;
 	if (index < N){
-		indices[index] = generate(globalState)*NODES*MAX_INPUTS;
+		points[index] = generate(globalState)*TOTAL_LINKS;
 	}
 }
-__global__ void generateRuleCrossoverindices(int *indices, curandState *globalState){
-	int index = threadIdx.x + blockDim.x *blockIdx.x;
+/// <summary>
+/// Generates the rule crossover points.
+/// </summary>
+/// <param name="points">The points.</param>
+/// <param name="globalState">curandState.</param>
+/// <returns></returns>
+__global__ void generateRuleCrossoverPoints(int *points, curandState *globalState){
+	const unsigned int index = threadIdx.x + blockDim.x *blockIdx.x;
 	int N = ELITE_MEMBERS / 2;
 	if (index < N){
-		indices[index] = generate(globalState)*RULES_PER_NODE*NODES;
+		points[index] = generate(globalState)*RULES_PER_NODE*NODES;
 	}
 }
 
+
+/// <summary>
+/// Crossovers the individuals pointed by the given indexes. One crossover per block.
+/// </summary>
+/// <param name="population">The population.</param>
+/// <param name="selectedIndices">The selected individual indices.</param>
+/// <param name="linkCrossIndices">The crossovers point.</param>
+/// <returns></returns>
 template <unsigned int blockSize, unsigned int offset>
-__global__ void crossover(network population[], int *indices_best, int *link_crossover_indices){
+__global__ void crossover(network population[], const int *selectedIndices, const int *linkCrossIndices){
 
-	const unsigned int population_index = (blockIdx.x * 2) / (POPULATION / POPULATIONS);
-	/*
-	const int index_parent_1 = indices_best[blockIdx.x * 2] + offset*population_index;
-	const int index_parent_2 = indices_best[blockIdx.x * 2 + 1] + offset*population_index;
-	*/
-	int indices[2] = { indices_best[blockIdx.x * 2] + offset*population_index, indices_best[blockIdx.x * 2 + 1] + offset*population_index };
+	const unsigned int populationIndex = (blockIdx.x * 2) / (POPULATION / POPULATIONS);
+
+	const int indexParent1 = selectedIndices[blockIdx.x * 2] + offset*populationIndex;
+	const int indexParent2 = selectedIndices[blockIdx.x * 2 + 1] + offset*populationIndex;
+
+	const int indices[2] = { indexParent1, indexParent2 };
 
 	const unsigned int tid = threadIdx.x;
 
-	// Replace parents!
-	/*const int index_replacement_1 = indices[0];
-	const int index_replacement_2 = indices[1];
-	*/
-	__shared__ char links_child_1[INDIVIDUAL_SIZE];
-	__shared__ char links_child_2[INDIVIDUAL_SIZE];
+	__shared__ char linksChild1[TOTAL_LINKS];
+	__shared__ char linksChild2[TOTAL_LINKS];
 
 	__shared__ unsigned char rules_child_2[RULES_PER_NODE*NODES];
 
-	const int link_crossover_index = link_crossover_indices[blockIdx.x];
-	const int rule_crossover_index = (link_crossover_index / NODES) + 1;
+	const int linkCrossPoint = linkCrossIndices[blockIdx.x];
+	const char ruleCrossPoint = (linkCrossPoint / NODES) + 1;
 
 	/** Copy the children's links **/
 
-	const char links_condition = (tid < link_crossover_index);
+	const char links_condition = (tid < linkCrossPoint);
 
-	if (tid < INDIVIDUAL_SIZE){
-		links_child_1[tid] = population[indices[!links_condition]].links[tid];
-		links_child_2[tid] = population[indices[links_condition]].links[tid];
+	if (tid < TOTAL_LINKS){
+		linksChild1[tid] = population[indices[!links_condition]].links[tid];
+		linksChild2[tid] = population[indices[links_condition]].links[tid];
 	}
-	if (tid + blockSize < INDIVIDUAL_SIZE){
-		links_child_1[tid + blockSize] = population[indices[!links_condition]].links[tid + blockSize];
-		links_child_2[tid + blockSize] = population[indices[links_condition]].links[tid + blockSize];
+	if (tid + blockSize < TOTAL_LINKS){
+		linksChild1[tid + blockSize] = population[indices[!links_condition]].links[tid + blockSize];
+		linksChild2[tid + blockSize] = population[indices[links_condition]].links[tid + blockSize];
 	}
 
-	const char rules_condition = (tid >= rule_crossover_index);
+	const char rules_condition = (tid >= ruleCrossPoint);
 
 	if (tid < RULES_PER_NODE*NODES){
 		rules_child_2[tid] = population[indices[!rules_condition]].rules[tid];
@@ -763,91 +1032,90 @@ __global__ void crossover(network population[], int *indices_best, int *link_cro
 
 	__syncthreads();
 
+	// Calcule connectivity of each child and replace parents if pre-fitness is satisfied
 
-	__shared__ float child_connectivity_1, child_connectivity_2;
+	__shared__ float child1Connectivity, child2Connectivity;
 
 	/** Child 1 **/
-	calculeConnectivity<blockSize>(links_child_1, NODES*MAX_INPUTS, &child_connectivity_1);
+	calculeConnectivity<blockSize>(linksChild1, &child1Connectivity);
 
-	if (fabsf(child_connectivity_1 - INIT_CONNECTIVITY) < MAX_CONNECTIVITY_DISTANCE){
+	if (fabsf(child1Connectivity - INIT_CONNECTIVITY) < MAX_CONNECTIVITY_DISTANCE){
 		// Links
-		if (tid > link_crossover_index){
-			population[indices[0]].links[tid] = links_child_1[tid];
+		if (tid > linkCrossPoint && tid < TOTAL_LINKS){
+			population[indices[0]].links[tid] = linksChild1[tid];
 		}
-		if (blockSize >= 512 && ((tid + 512) > link_crossover_index) && (tid + 512) < INDIVIDUAL_SIZE){
-			population[indices[0]].links[tid + 512] = links_child_1[tid + 512];
+		if (blockSize >= 512 && ((tid + 512) > linkCrossPoint) && (tid + 512) < TOTAL_LINKS){
+			population[indices[0]].links[tid + 512] = linksChild1[tid + 512];
 		}
 
 		// Rules
-		if (tid < RULES_PER_NODE*NODES && tid >= rule_crossover_index){
+		if (tid < RULES_PER_NODE*NODES && tid >= ruleCrossPoint){
 			population[indices[0]].rules[tid] = population[indices[1]].rules[tid];
 		}
 	}
 
 	/** Child 2 **/
-	calculeConnectivity<blockSize>(links_child_2, NODES*MAX_INPUTS, &child_connectivity_2);
+	calculeConnectivity<blockSize>(linksChild2, &child2Connectivity);
 
-	if (fabsf(child_connectivity_2 - INIT_CONNECTIVITY) < MAX_CONNECTIVITY_DISTANCE){
+	if (fabsf(child2Connectivity - INIT_CONNECTIVITY) < MAX_CONNECTIVITY_DISTANCE){
 		// Links
-		if (tid > link_crossover_index){
-			population[indices[1]].links[tid] = links_child_2[tid];
+		if (tid > linkCrossPoint && tid < TOTAL_LINKS){
+			population[indices[1]].links[tid] = linksChild2[tid];
 		}
-		if (blockSize >= 512 && ((tid + 512) > link_crossover_index) && (tid + 512) < INDIVIDUAL_SIZE){
-			population[indices[1]].links[tid + 512] = links_child_2[tid + 512];
+		if (blockSize >= 512 && ((tid + 512) > linkCrossPoint) && (tid + 512) < TOTAL_LINKS){
+			population[indices[1]].links[tid + 512] = linksChild2[tid + 512];
 		}
 
 		// Rules
-		if (tid < RULES_PER_NODE*NODES && tid >= rule_crossover_index){
+		if (tid < RULES_PER_NODE*NODES && tid >= ruleCrossPoint){
 			population[indices[1]].rules[tid] = rules_child_2[tid];
 		}
 	}
 
 }
 
-__global__ void setup_indices(int* indices_best, thrust::device_ptr<int> positions){
-
-	int offset = POPULATION / POPULATIONS;
-	int index = (threadIdx.x + blockDim.x*blockIdx.x);
-	unsigned int parents_per_population = ELITE_MEMBERS / POPULATIONS;
-	int population = index / parents_per_population;
-
-	if (index < (ELITE_MEMBERS)){
-		indices_best[index] = positions[population*offset + index%parents_per_population];
-	}
-
-}
-
-void total_fitness(thrust::device_ptr<float> keys, thrust::device_ptr<float> total_fitness){
+/// <summary>
+/// Calculates the total fitness of each population. A inverse operator is applied so higher values will correspond to better fitness.
+/// </summary>
+/// <param name="populationFitness">The population(s) fitness.</param>
+/// <param name="fitnessSum">The fitness sum.</param>
+void total_fitness(thrust::device_ptr<float> populationFitness, thrust::device_ptr<float> fitnessSum){
 
 	inverse<float> unary_op;
 	thrust::plus<float> binary_op;
 	float init = 0;
 
 	for (int i = 0; i < (POPULATIONS); i++){
-		total_fitness[i] = thrust::transform_reduce(keys + i*POPULATION / POPULATIONS, keys + (i + 1)*POPULATION / POPULATIONS, unary_op, init, binary_op);
+		fitnessSum[i] = thrust::transform_reduce(populationFitness + i*POPULATION / POPULATIONS, populationFitness + (i + 1)*POPULATION / POPULATIONS, unary_op, init, binary_op);
 	}
 
 }
 
-
-
-__global__ void roulette_selection(float pop_fitness[], int indices[], thrust::device_ptr<float> total_fitness, curandState *globalState){
+/// <summary>
+/// Performs a roulette selection among the individuals.
+/// </summary>
+/// <param name="populationFitness">The population fitness.</param>
+/// <param name="chosenIndices">The chosen indices.</param>
+/// <param name="fitnessSum">The fitness sum of each population.</param>
+/// <param name="globalState">curandState.</param>
+/// <returns></returns>
+template <unsigned int populationOffset>
+__global__ void rouletteSelection(float populationFitness[], int chosenIndices[], thrust::device_ptr<float> fitnessSum, curandState *globalState){
 
 	const unsigned int index = threadIdx.x + blockIdx.x*blockDim.x;
-	const unsigned int population_index = index / (POPULATION / POPULATIONS);
-	const unsigned int pop_offset = POPULATION / POPULATIONS;
+	const unsigned int populationIndex = index / (POPULATION / POPULATIONS);
 
 	if (index < POPULATION){
 		float random = generate(
-			globalState) * total_fitness[population_index];
-		int pick = pop_offset*population_index;
+			globalState) * fitnessSum[populationIndex];
+		int pick = populationOffset*populationIndex;
 		double offset = 0;
-		float individual_fitness = 1 / pop_fitness[pick];
+		const float individualFitness = 1 / populationFitness[pick];
 		while (random > offset){
-			offset += powf(individual_fitness, 3);
+			offset += individualFitness;
 			pick++;
 		}
-		indices[index] = pick % (POPULATION / POPULATIONS);
+		chosenIndices[index] = pick % (POPULATION / POPULATIONS);
 	}
 
 }
@@ -892,9 +1160,15 @@ __global__ void sus_selection(float pop_fitness[], int indices[], thrust::device
 }
 
 template <unsigned int elements_per_population, unsigned int offset>
-__global__ void migrate_v2(network population[], int indices_best[]){
+/// <summary>
+/// Migrates the number of individuals specified by ELEMENTS_TO_MIGRATE constant between adjacents populations.
+/// </summary>
+/// <param name="population">The entire population.</param>
+/// <param name="orderedIndices">The ordered indices.</param>
+/// <returns></returns>
+__global__ void migrate(network population[], int orderedIndices[]){
 
-	const int index = blockIdx.x;
+	const unsigned int index = blockIdx.x;
 	const unsigned int tid = threadIdx.x;
 	const unsigned int pop_index = index / elements_per_population;
 	const unsigned int offset_elements = (POPULATION / POPULATIONS) * 2 - elements_per_population;
@@ -902,8 +1176,8 @@ __global__ void migrate_v2(network population[], int indices_best[]){
 	if (index < ELEMENTS_TO_MIGRATE){
 		unsigned int id_best = pop_index*offset + index%elements_per_population;
 		unsigned int id_worst = (id_best + offset_elements) % ELITE_MEMBERS;
-		unsigned int index_best = indices_best[id_best];
-		unsigned int index_worst = indices_best[id_worst];
+		unsigned int index_best = orderedIndices[id_best];
+		unsigned int index_worst = orderedIndices[id_worst];
 
 		population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].links[tid] = population[(pop_index*POPULATION / POPULATIONS) + index_best].links[tid];
 
@@ -920,75 +1194,109 @@ __global__ void migrate_v2(network population[], int indices_best[]){
 		}
 
 		if (tid < NODES){
-			//	population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].nodes[tid] = population[(pop_index*POPULATION / POPULATIONS) + index_best].nodes[tid];
 			population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].rules[tid] = population[(pop_index*POPULATION / POPULATIONS) + index_best].rules[tid];
 		}
 
 	}
 }
 
-void compute_fitness(cudaStream_t stream1, cudaStream_t stream2, network * d_population, float * link_distances, float * d_x_links, float * link_fitness, cublasHandle_t handle, float * node_distances, float * d_x_nodes, float * node_fitness, float * d_current_fitness, char goal_links[], char init_nodes[], char goal_nodes[]){
-	link_distance_v2<8> << <(POPULATION*NODES*MAX_INPUTS / 8 + 32 * 4 - 1) / (32 * 4), 32 * 4 >> >(d_population, link_distances, POPULATION, goal_links);
+/// <summary>
+/// Computes fitness for every individual of the population(s).
+/// </summary>
+/// <param name="stream1">The stream1.</param>
+/// <param name="stream2">The stream2.</param>
+/// <param name="population">The population.</param>
+/// <param name="singleLinkDistances">The single link distances.</param>
+/// <param name="onesLinksVector">The ones links vector.</param>
+/// <param name="linkFitnessPerIndividual">The link fitness per individual.</param>
+/// <param name="handle">cublasHandle.</param>
+/// <param name="singleNodeDistances">The single node distances.</param>
+/// <param name="onesNodesVector">The ones nodes vector.</param>
+/// <param name="nodeFitnessPerIndividual">The node fitness per individual.</param>
+/// <param name="popFitness">The population fitness.</param>
+/// <param name="goalLinks">The goal links.</param>
+/// <param name="initNodes">The initial nodes.</param>
+/// <param name="goalNodes">The goal nodes.</param>
+void computeFitness(cudaStream_t stream1, cudaStream_t stream2, network * population, float * singleLinkDistances, float * onesLinksVector, float * linkFitnessPerIndividual, cublasHandle_t handle, float * singleNodeDistances, float * onesNodesVector, float * nodeFitnessPerIndividual, float * popFitness, char goalLinks[], char initNodes[], char goalNodes[]){
+	linkDistance<8> << <(POPULATION*TOTAL_LINKS / 8 + 32 * 4 - 1) / (32 * 4), 32 * 4 >> >(population, singleLinkDistances, goalLinks);
 	gpuErrchk(cudaPeekAtLastError());
 
-	node_distance <4> << <(POPULATION*NODES + 4 * 32 - 1) / (32 * 4), 32 * 4 >> >(d_population, node_distances, POPULATION, init_nodes, goal_nodes);
+	nodeDistance <4> << <(POPULATION*NODES + 4 * 32 - 1) / (32 * 4), 32 * 4 >> >(population, singleNodeDistances, initNodes, goalNodes);
 	gpuErrchk(cudaPeekAtLastError());
 
-	sum_link_distances(link_distances, d_x_links, link_fitness, NODES*MAX_INPUTS, POPULATION, handle);
+	sumSingleLinkDistances(singleLinkDistances, onesLinksVector, linkFitnessPerIndividual, TOTAL_LINKS, POPULATION, handle);
 	gpuErrchk(cudaPeekAtLastError());
 
-
-	sum_node_distances(node_distances, d_x_nodes, node_fitness, NODES, POPULATION, handle);
+	sumSingleNodeDistances(singleNodeDistances, onesNodesVector, nodeFitnessPerIndividual, NODES, POPULATION, handle);
 	gpuErrchk(cudaPeekAtLastError());
 
-	pop_fitness(link_fitness, node_fitness, d_current_fitness, handle);
+	populationFitness(linkFitnessPerIndividual, nodeFitnessPerIndividual, popFitness, handle);
 	gpuErrchk(cudaPeekAtLastError());
 }
 
-void elite_selection(network * d_population, float * link_distances, float * d_x_links, float * link_fitness, cublasHandle_t handle,
-	float * node_distances, float * d_x_nodes, float * node_fitness, float * d_current_fitness, thrust::device_ptr<float> device_ptr_fitness,
-	int * d_indices, thrust::device_ptr<int> dev_indices, int * d_indices_best){
+/// <summary>
+/// Runs elite selection.
+/// </summary>
+/// <param name="populationFitness">The population fitness.</param>
+/// <param name="orderedIndices">The ordered indices.</param>
+void runEliteSelection(thrust::device_ptr<float> populationFitness, thrust::device_ptr<int> orderedIndices){
 
-	sort_population(device_ptr_fitness, dev_indices);
+	sort_population(populationFitness, orderedIndices);
 	gpuErrchk(cudaPeekAtLastError());
-
-	//if (ELITE_MEMBERS != POPULATION){
-	setup_indices << <((ELITE_MEMBERS + 1023) * 20) / 1024, ELITE_MEMBERS / 16 >> >(d_indices_best, dev_indices);
-	gpuErrchk(cudaPeekAtLastError());
-	//}
 
 }
 
-void roulette_sel(network * d_population, float * link_distances, float * d_x_links, float * link_fitness, cublasHandle_t handle,
-	float * node_distances, float * d_x_nodes, float * node_fitness, float * d_current_fitness, thrust::device_ptr<float> device_ptr_fitness,
-	int * d_indices, thrust::device_ptr<int> dev_indices, int * d_indices_best, curandState* globalState, thrust::device_ptr<float> total_pop_fitness){
+/// <summary>
+/// Runs roulette selection.
+/// </summary>
+/// <param name="populationFitness">The population fitness.</param>
+/// <param name="devicePtrPopulationFitness">A thrust device_ptr to population fitness.</param>
+/// <param name="chosenIndices">The chosen indices.</param>
+/// <param name="globalState">curandState.</param>
+/// <param name="sumPopulationFitness">Sum of population(s) fitness.</param>
+void runRouletteSelection(float * populationFitness, thrust::device_ptr<float> devicePtrPopulationFitness, int * chosenIndices, curandState* globalState, thrust::device_ptr<float> sumPopulationFitness){
 
-	total_fitness(device_ptr_fitness, total_pop_fitness);
+	total_fitness(devicePtrPopulationFitness, sumPopulationFitness);
 
-	sus_selection << <(POPULATION + 512 + 1) / 512, 512 >> >(d_current_fitness, d_indices_best, total_pop_fitness, globalState);
+	rouletteSelection<POPULATION / POPULATIONS> << <(ELITE_MEMBERS - 511) / 512, 512 >> >(populationFitness, chosenIndices, sumPopulationFitness, globalState);
 }
 
-void migrate(unsigned int current_generation, unsigned int migration_freq, network * d_population, int * d_indices_best){
-	if (POPULATIONS > 1 && (current_generation%migration_freq) == 0){
-		migrate_v2<ELEMENTS_TO_MIGRATE / POPULATIONS, ELITE_MEMBERS / POPULATIONS> << <ELEMENTS_TO_MIGRATE, 256 >> >(d_population, d_indices_best);
+/// <summary>
+/// Runs migration with the frequency defined by MIGRATION_FREQUENCY constant and moving ELEMENTS_TO_MIGRATE total migrations.
+/// </summary>
+/// <param name="currentGeneration">The current generation.</param>
+/// <param name="migrationFrequency">The migration frequency.</param>
+/// <param name="population">The population.</param>
+/// <param name="chosenIndices">The chosen indices.</param>
+void migrate(unsigned int currentGeneration, unsigned int migrationFrequency, network * population, int * chosenIndices){
+	if (POPULATIONS > 1 && (currentGeneration%migrationFrequency) == 0){
+		migrate<ELEMENTS_TO_MIGRATE / POPULATIONS, ELITE_MEMBERS / POPULATIONS> << <ELEMENTS_TO_MIGRATE, 256 >> >(population, chosenIndices);
 		gpuErrchk(cudaPeekAtLastError());
 	}
 }
 
-network population[POPULATION];
 
 int main(void) {
 
-	for (int e = 0; e < EXECUTIONS; e++){
+	for (int e = 0; e < EXECUTIONS; e++){		// Runs EXECUTIONS independent runs
 
-		float time;
-		cudaEvent_t start, stop;
+		float time;								// Holds time for current execution
+		cudaEvent_t start, stop;				// CUDA Timers
 
+		/*
+		Timers creation
+		*/
 		HANDLE_ERROR(cudaEventCreate(&start));
 		HANDLE_ERROR(cudaEventCreate(&stop));
 		HANDLE_ERROR(cudaEventRecord(start));
-
+		/*
+		File for the output
+		*/
 		FILE *f;
+
+		/*
+		cuBLAS variables
+		*/
 
 		cudaError_t cudastat;
 		cublasStatus_t stat;
@@ -996,30 +1304,150 @@ int main(void) {
 		cublasHandle_t handle;
 		stat = cublasCreate(&handle);
 
-		float *d_current_fitness;		// Holds total population fitness for each generation
+		/*
+		Genetic algorithm arrays
+		*/
 
-		float* link_fitness;		// Link fitness of each individual
-		float* node_fitness;		// Node fitness of each individual
-
-		network h_BEST_INDIVIDUAL;
-		float h_BEST_INDIVIDUAL_FITNESS_HOST = 1.0;
-		float aux = 1.0;
-
-		float * d_x_links, *d_x_nodes;	// Array to hold the whether a link/node exists or not in the goal network
-		int *d_indices_best, *d_indices_worst;	// indices for the best and worst individuals
-		float *node_distances, *link_distances;	// Node and link distances PER NETWORK
+		/*
+		Population
+		*/
 
 		network *d_population;	// Network population
 
-		curandState* devStates;
+		HANDLE_ERROR(
+			cudaMalloc(&d_population, POPULATION*sizeof(network)))
+			;
 
-		int null_links = thrust::count(INIT_NETWORK_HOST.links, INIT_NETWORK_HOST.links + NODES*MAX_INPUTS, 0);
-		gpuErrchk(cudaPeekAtLastError());
-		const float init_connectivity = (NODES * MAX_INPUTS - (float)null_links) / (NODES * MAX_INPUTS);
+		/*
+		Fitness
+		*/
 
 		HANDLE_ERROR(
-			cudaMemcpyToSymbol(INIT_CONNECTIVITY, &init_connectivity, sizeof(float)));
+			cudaMemcpyToSymbol(LAMBDA_VALUES, &LAMBDA_HOST, sizeof(float)*POPULATIONS));		// Lambda values for each population
 
+		char * d_goalLinks;					// Goal links
+		HANDLE_ERROR(
+			cudaMalloc(&d_goalLinks, TOTAL_LINKS*sizeof(char)));
+		HANDLE_ERROR(
+			cudaMemcpy(d_goalLinks, &GOAL_NETWORK_HOST.links, sizeof(char)*TOTAL_LINKS, cudaMemcpyHostToDevice));
+
+		char * d_initNodes;					// Initial nodes
+		HANDLE_ERROR(
+			cudaMalloc(&d_initNodes, TOTAL_LINKS*sizeof(char)));
+		HANDLE_ERROR(
+			cudaMemcpy(d_initNodes, H_INIT_NODES, sizeof(char)*NODES, cudaMemcpyHostToDevice));
+
+		char * d_goalNodes;					// Goal nodes
+		HANDLE_ERROR(
+			cudaMalloc(&d_goalNodes, NODES*sizeof(char)));
+		HANDLE_ERROR(
+			cudaMemcpy(d_goalNodes, &H_GOAL_NODES, sizeof(char)*NODES, cudaMemcpyHostToDevice));
+
+		network h_bestIndividual;				// Best individual for each generation
+		float h_bestFitness = 1.0;				// Fitness of the best individual
+
+		float *d_populationFitness;				// Holds total population fitness for each generation
+
+		HANDLE_ERROR(
+			cudaMalloc(&d_populationFitness, POPULATION*sizeof(float)));
+		thrust::device_ptr<float> device_ptr_fitness = thrust::device_pointer_cast(d_populationFitness);
+
+		float* d_individualsLinkFitness;					// Link normalized fitness of each individual
+		float* d_individualsNodeFitness;					// Node normalized fitness of each individual
+
+		HANDLE_ERROR(
+			cudaMalloc(&d_individualsLinkFitness, POPULATION*sizeof(float)));
+		HANDLE_ERROR(
+			cudaMalloc(&d_individualsNodeFitness, POPULATION*sizeof(float)));
+
+		/*
+		Vectors filled with ones used by cuBLAS matrix multiplication to sum all node/links distances.
+		If we multiply a matrix by a ones vector, we will obtain the sum of all its rows.
+		*/
+
+		float * d_linksOnesVector, *d_nodesOnesVector;
+
+		float* x_links = new float[TOTAL_LINKS];
+
+		for (int i = 0; i < TOTAL_LINKS; i++)
+		{
+			x_links[i] = 1;
+		}
+
+		float* x_nodes = new float[NODES];
+
+		for (int i = 0; i < NODES; i++)
+		{
+			x_nodes[i] = 1;
+		}
+
+		HANDLE_ERROR(
+			cudaMalloc(&d_linksOnesVector, TOTAL_LINKS*sizeof(float)));
+		HANDLE_ERROR(
+			cudaMemcpy(d_linksOnesVector, x_links, TOTAL_LINKS*sizeof(float), cudaMemcpyHostToDevice));
+
+		HANDLE_ERROR(
+			cudaMalloc(&d_nodesOnesVector, NODES*sizeof(float)));
+		HANDLE_ERROR(
+			cudaMemcpy(d_nodesOnesVector, x_nodes, NODES*sizeof(float), cudaMemcpyHostToDevice));
+
+		free(x_links);
+		free(x_nodes);
+
+		float *d_singleNodeDistances, *d_singleLinkDistances;	// Node and link distances PER NETWORK, that is, a[i] == 1 if i link/node value is different from the same node/link in goal network
+
+		HANDLE_ERROR(
+			cudaMalloc(&d_singleNodeDistances, POPULATION * NODES * sizeof(float)));
+		HANDLE_ERROR(
+			cudaMalloc(&d_singleLinkDistances, POPULATION * TOTAL_LINKS * sizeof(float)));
+
+		int * d_chosenIndividuals;					// Indices of the chosen inviduals
+
+		HANDLE_ERROR(
+			cudaMalloc(&d_chosenIndividuals, ELITE_MEMBERS*sizeof(int)));
+
+		thrust::device_ptr<int> dev_indices = thrust::device_pointer_cast(d_chosenIndividuals);
+
+		float * d_sumFitness;					// Holds total fitness of each population
+		HANDLE_ERROR(
+			cudaMalloc(&d_sumFitness, POPULATIONS*sizeof(float)));
+
+		thrust::device_ptr<float> dev_total_fitness = thrust::device_pointer_cast(d_sumFitness);
+
+		int *d_linkCrossPoints, *d_rulesCrossPoints;				// Arrays for random crossover indices
+		HANDLE_ERROR(
+			cudaMalloc(&d_linkCrossPoints, (ELITE_MEMBERS / 2)*sizeof(int)));
+		HANDLE_ERROR(
+			cudaMalloc(&d_rulesCrossPoints, (ELITE_MEMBERS / 2)*sizeof(int)));
+
+
+		/*
+		Misc
+		*/
+
+		curandState* devStates;					// cuRAND states
+
+		HANDLE_ERROR(
+			cudaMalloc(&devStates, POPULATION * 1024 * sizeof(curandState)));
+
+		/** Streams **/
+		cudaStream_t stream0, stream1, stream2, stream3, stream4;
+		cudaStreamCreate(&stream0);
+		cudaStreamCreate(&stream1);
+		cudaStreamCreate(&stream2);
+		cudaStreamCreate(&stream3);
+		cudaStreamCreate(&stream4);
+
+		/** Calculate initial connectivity and save it in contant memory **/
+
+		int h_initNullLinks = thrust::count(INIT_NETWORK_HOST.links, INIT_NETWORK_HOST.links + TOTAL_LINKS, 0);	// Null links in initial network
+
+		const float h_initConnectivity = (TOTAL_LINKS - (float)h_initNullLinks) / (TOTAL_LINKS);				// Connectivity of initial network
+
+		HANDLE_ERROR(
+			cudaMemcpyToSymbol(INIT_CONNECTIVITY, &h_initConnectivity, sizeof(float)));							// Save it in constant memory
+
+		/** Create a file to save algorithm's evolution **/
 
 		char buf[0x100];
 		_snprintf(buf, sizeof(buf), "P-Sexec%d-%s_pob%dpops%d_MIGRs%d_gen%dfreq%d.csv", e, "ELITE", POPULATION, POPULATIONS, ELEMENTS_TO_MIGRATE / POPULATIONS, GENERATIONS, MIGRATION_FREQUENCY);
@@ -1031,186 +1459,120 @@ int main(void) {
 			exit(1);
 		}
 
-		HANDLE_ERROR(
-			cudaMemcpyToSymbol(LAMBDA_VALUES, &LAMBDA_HOST, sizeof(float)*POPULATIONS));
+		/** Print current configuration **/
 
-		int * d_indices;
-		HANDLE_ERROR(
-			cudaMalloc(&d_indices, POPULATION*sizeof(int)));
+		printParameters();
 
-		thrust::device_ptr<int> dev_indices = thrust::device_pointer_cast(d_indices);
+		/** Setup random number sequences **/
 
-		HANDLE_ERROR(
-			cudaMalloc(&d_current_fitness, POPULATION*sizeof(float)));
-
-		char * d_goal_links;
-		HANDLE_ERROR(
-			cudaMalloc(&d_goal_links, INDIVIDUAL_SIZE*sizeof(char)));
-		HANDLE_ERROR(
-			cudaMemcpy(d_goal_links, &GOAL_NETWORK_HOST.links, sizeof(char)*INDIVIDUAL_SIZE, cudaMemcpyHostToDevice));
-
-		char * d_init_nodes;
-		HANDLE_ERROR(
-			cudaMalloc(&d_init_nodes, INDIVIDUAL_SIZE*sizeof(char)));
-		HANDLE_ERROR(
-			cudaMemcpy(d_init_nodes, &INIT_NETWORK_HOST.nodes, sizeof(char)*NODES, cudaMemcpyHostToDevice));
-
-		char * d_goal_nodes;
-		HANDLE_ERROR(
-			cudaMalloc(&d_goal_nodes, NODES*sizeof(char)));
-		HANDLE_ERROR(
-			cudaMemcpy(d_goal_nodes, &GOAL_NETWORK_HOST.nodes, sizeof(char)*NODES, cudaMemcpyHostToDevice));
-
-
-		float * total_fitness;
-		HANDLE_ERROR(
-			cudaMalloc(&total_fitness, POPULATIONS*sizeof(float)));
-		thrust::device_ptr<float> dev_total_fitness = thrust::device_pointer_cast(total_fitness);
-		thrust::device_ptr<float> device_ptr_fitness = thrust::device_pointer_cast(d_current_fitness);
-		thrust::device_ptr<float> min_ptr = thrust::min_element(device_ptr_fitness, device_ptr_fitness + POPULATION);
-
-		float* x_links = new float[NODES*MAX_INPUTS];
-
-		for (int i = 0; i < NODES*MAX_INPUTS; i++)
-		{
-			x_links[i] = 1;//(1-LAMBDA)/(NODES*MAX_INPUTS);
-		}
-
-		float* x_nodes = new float[NODES];
-
-		for (int i = 0; i < NODES; i++)
-		{
-			x_nodes[i] = 1;//(LAMBDA)/(NODES);
-		}
-
-
-		HANDLE_ERROR(
-			cudaMalloc(&link_fitness, POPULATION*sizeof(float)));
-		HANDLE_ERROR(
-			cudaMalloc(&node_fitness, POPULATION*sizeof(float)));
-		HANDLE_ERROR(
-			cudaMalloc(&d_x_links, NODES*MAX_INPUTS*sizeof(float)));
-		HANDLE_ERROR(
-			cudaMemcpy(d_x_links, x_links, NODES*MAX_INPUTS*sizeof(float), cudaMemcpyHostToDevice));
-
-		HANDLE_ERROR(
-			cudaMalloc(&d_x_nodes, NODES*sizeof(float)));
-		HANDLE_ERROR(
-			cudaMemcpy(d_x_nodes, x_nodes, NODES*sizeof(float), cudaMemcpyHostToDevice));
-
-
-		HANDLE_ERROR(
-			cudaMalloc(&d_indices_best, ELITE_MEMBERS*sizeof(int)));
-		HANDLE_ERROR(
-			cudaMalloc(&d_indices_worst, ELITE_MEMBERS*sizeof(int)));
-
-		HANDLE_ERROR(
-			cudaMalloc(&node_distances, POPULATION * NODES * sizeof(float)));
-		HANDLE_ERROR(
-			cudaMalloc(&link_distances, POPULATION * NODES * MAX_INPUTS * sizeof(float)));
-
-		HANDLE_ERROR(
-			cudaMalloc(&devStates, POPULATION * 1024 * sizeof(curandState)));
-
-		print_parameters();
-
-		setup_kernel_V3 << < POPULATION * 2, 512 >> > (devStates);
+		setupCurandDiffSeed << < POPULATION * 2, 512 >> > (devStates);
 		gpuErrchk(cudaPeekAtLastError());
 
-		HANDLE_ERROR(
-			cudaMalloc(&d_population, POPULATION*sizeof(network)))
-			;
+		/** Generate initial population **/
 
-		generate_individual << <(POPULATION + 1023) / 512, 512 >> >(d_population, NODES, MAX_INPUTS, RULES_PER_NODE, devStates);
+		generateInitialPopulation << <(POPULATION + 1023) / 512, 512 >> >(d_population, devStates);
 		gpuErrchk(cudaPeekAtLastError());
 
-		const int individuals_block_ns = INDIVIDUALS_PER_BLOCK;
+		/** Initial elementes indices: 0, 1, 2, 3... **/
 
-		int *link_crossover_indices, *rule_crossover_indices;
-		HANDLE_ERROR(
-			cudaMalloc(&link_crossover_indices, (ELITE_MEMBERS / 2)*sizeof(int)));
-		HANDLE_ERROR(
-			cudaMalloc(&rule_crossover_indices, (ELITE_MEMBERS / 2)*sizeof(int)));
+		sequence << <(POPULATION + 1023) / 1024, 1024 >> >(d_chosenIndividuals);
+		gpuErrchk(cudaPeekAtLastError())
 
-		float* h_fit = (float*)malloc(POPULATION*sizeof(float));
+			/** Random link crossover indeces **/
 
-		cudaStream_t stream0, stream1, stream2, stream3, stream4;
-		cudaStreamCreate(&stream0);
-		cudaStreamCreate(&stream1);
-		cudaStreamCreate(&stream2);
-		cudaStreamCreate(&stream3);
-		cudaStreamCreate(&stream4);
-
-
-		sequence << <(POPULATION + 1023) / 1024, 1024 >> >(d_indices);
+			generateLinkCrossPoints << < (ELITE_MEMBERS / 2 + 447) / 448, 448 >> >(d_linkCrossPoints, devStates);
 		gpuErrchk(cudaPeekAtLastError());
 
-		generateLinkCrossoverindices << < (ELITE_MEMBERS / 2 + 447) / 448, 448, 0, stream2 >> >(link_crossover_indices, devStates);
-		gpuErrchk(cudaPeekAtLastError());
+		for (int i = 0; i < GENERATIONS && h_bestFitness != 0; i++){
 
-		for (int i = 0; i < GENERATIONS && h_BEST_INDIVIDUAL_FITNESS_HOST != 0; i++){
+			/** Evaluate population **/
+			computeFitness(stream3, stream4, d_population, d_singleLinkDistances, d_linksOnesVector, d_individualsLinkFitness, handle, d_singleNodeDistances, d_nodesOnesVector, d_individualsNodeFitness, d_populationFitness, d_goalLinks, d_initNodes, d_goalNodes);
 
-			compute_fitness(stream3, stream4, d_population, link_distances, d_x_links, link_fitness, handle, node_distances, d_x_nodes, node_fitness, d_current_fitness, d_goal_links, d_init_nodes, d_goal_nodes);
-
-			min_v2(d_population, device_ptr_fitness, min_ptr, i, f, &h_BEST_INDIVIDUAL_FITNESS_HOST, &h_BEST_INDIVIDUAL);
+			/** Save best individual **/
+			updateBestIndividual(d_population, device_ptr_fitness, i, f, &h_bestFitness, &h_bestIndividual);
 			gpuErrchk(cudaPeekAtLastError());
 
-			elite_selection(d_population, link_distances, d_x_links, link_fitness, handle, node_distances, d_x_nodes, node_fitness, d_current_fitness, device_ptr_fitness, d_indices, dev_indices, d_indices_best);
-			//roulette_sel(d_population, link_distances, d_x_links, link_fitness, handle, node_distances, d_x_nodes, node_fitness, d_current_fitness, device_ptr_fitness, d_indices, dev_indices, d_indices_best, devStates, dev_total_fitness);
-
+			/** Parent selection **/
+			runEliteSelection(device_ptr_fitness, dev_indices);
 			gpuErrchk(cudaPeekAtLastError());
 
-			print_progress((float)i / (float)GENERATIONS, h_BEST_INDIVIDUAL_FITNESS_HOST);
+			/** Show progress in console **/
+			print_progress((float)i / (float)GENERATIONS, h_bestFitness);
 			gpuErrchk(cudaPeekAtLastError());
 
-			//generateRuleCrossoverindices << <(ELITE_MEMBERS / 2 + 31) / 32, 32 >> >(rule_crossover_indices, devStates);
-			//gpuErrchk(cudaPeekAtLastError());
-
-			crossover<512, POPULATION / POPULATIONS> << <ELITE_MEMBERS / 2, (NODES*MAX_INPUTS) / 2, 0, stream2 >> >(d_population, d_indices_best, link_crossover_indices);
+			/** Crossover **/
+			crossover<512, POPULATION / POPULATIONS> << <ELITE_MEMBERS / 2, (TOTAL_LINKS) / 2, 0, stream2 >> >(d_population, d_chosenIndividuals, d_linkCrossPoints);
 			gpuErrchk(cudaPeekAtLastError());
 
-			mutation << <(POPULATION + 32 * 5 + 1) / (32 * 5), 32 * 5, 0, stream0 >> >(d_population, NODES, MAX_INPUTS, RULES_PER_NODE, LINK_MUTATION_PROB, RULE_MUTATION_PROB, devStates);
+			/** Mutation **/
+			mutation << <(POPULATION + 32 * 5 + 1) / (32 * 5), 32 * 5, 0, stream0 >> >(d_population, devStates);
 			gpuErrchk(cudaPeekAtLastError());
 
-			sequence << <(POPULATION + 1023) / 1024, 1024, 0, stream1 >> >(d_indices);
-			gpuErrchk(cudaPeekAtLastError());
-			generateLinkCrossoverindices << < (ELITE_MEMBERS / 2 + 447) / 448, 448, 0, stream2 >> >(link_crossover_indices, devStates);
+			/** Reset individual indices for next generation **/
+			sequence << <(POPULATION + 1023) / 1024, 1024, 0, stream1 >> >(d_chosenIndividuals);
 			gpuErrchk(cudaPeekAtLastError());
 
-			migrate(i, MIGRATION_FREQUENCY, d_population, d_indices_best);
+			/** Generate new crossover indices **/
+			generateLinkCrossPoints << < (ELITE_MEMBERS / 2 + 447) / 448, 448, 0, stream2 >> >(d_linkCrossPoints, devStates);
+			gpuErrchk(cudaPeekAtLastError());
+
+			/** Migrate elements **/
+			migrate(i, MIGRATION_FREQUENCY, d_population, d_chosenIndividuals);
 
 			//	gpuErrchk( cudaDeviceSynchronize() );
 		}
-		// Retrieve data from device
 
+		/** Stop timers **/
 		HANDLE_ERROR(cudaEventRecord(stop));
 		HANDLE_ERROR(cudaEventSynchronize(stop));
 		HANDLE_ERROR(cudaEventElapsedTime(&time, start, stop));
-		fprintf(f, "\nTime to generate:  %3.1f ms \n", time);
-		print_network_file(h_BEST_INDIVIDUAL, f);
 
+		/** Write time and best individual **/
+		fprintf(f, "\nTime to generate:  %3.1f ms \n", time);
+		print_network_file(h_bestIndividual, f);
+
+		/** Close file **/
 		fclose(f);
 
+		/** Free memory **/
 		cudaFree(d_population);
-		cudaFree(total_fitness);
-		cudaFree(d_indices);
-		cudaFree(d_current_fitness);
-		cudaFree(link_fitness);
-		cudaFree(node_fitness);
-		cudaFree(d_x_links);
-		cudaFree(d_x_nodes);
-		cudaFree(d_indices_best);
-		cudaFree(node_distances);
-		cudaFree(link_distances);
+
+		cudaFree(d_initNodes);
+		cudaFree(d_goalLinks);
+		cudaFree(d_goalNodes);
+
+		cudaFree(d_populationFitness);
+
+		cudaFree(d_individualsLinkFitness);
+		cudaFree(d_individualsNodeFitness);
+
+		cudaFree(d_linksOnesVector);
+		cudaFree(d_nodesOnesVector);
+
+		cudaFree(d_singleNodeDistances);
+		cudaFree(d_singleLinkDistances);
+
+		cudaFree(d_chosenIndividuals);
+
+		cudaFree(d_sumFitness);
+
+		cudaFree(d_linkCrossPoints);
+		cudaFree(d_rulesCrossPoints);
+
 		cudaFree(devStates);
+
+		/** Destroy streams **/
+
 		cudaStreamDestroy(stream0);
 		cudaStreamDestroy(stream1);
 		cudaStreamDestroy(stream2);
 		cudaStreamDestroy(stream3);
 		cudaStreamDestroy(stream4);
+
 		cublasDestroy(handle);
 
 	}
+
 	cudaDeviceReset();
 	return 0;
 }
