@@ -52,17 +52,17 @@ struct inverse
 #define POPULATIONS 1
 #define RULES_PER_NODE 1
 #define NODES 32
-#define POPULATION (1024*POPULATIONS)
+#define POPULATION (200 * POPULATIONS)
 #define ELITE_MEMBERS (POPULATION)
 #define ELEMENTS_TO_MIGRATE (2*POPULATIONS)
 #define MIGRATION_FREQUENCY 2
 
 #define MAX_CONNECTIVITY_DISTANCE 0.1
 
-#define GENERATIONS 2000
-#define EXECUTIONS 1
+#define GENERATIONS 100000
+#define EXECUTIONS 10
 #define LINK_MUTATION_PROB 0.001  
-#define RULE_MUTATION_PROB 0.001
+#define RULE_MUTATION_PROB 0.5
 
 #define TOTAL_LINKS (NODES*MAX_INPUTS)
 
@@ -1159,13 +1159,13 @@ __global__ void sus_selection(float pop_fitness[], int indices[], thrust::device
 
 }
 
-template <unsigned int elements_per_population, unsigned int offset>
 /// <summary>
 /// Migrates the number of individuals specified by ELEMENTS_TO_MIGRATE constant between adjacents populations.
 /// </summary>
 /// <param name="population">The entire population.</param>
 /// <param name="orderedIndices">The ordered indices.</param>
 /// <returns></returns>
+template <unsigned int elements_per_population, unsigned int offset>
 __global__ void migrate(network population[], int orderedIndices[]){
 
 	const unsigned int index = blockIdx.x;
@@ -1258,7 +1258,7 @@ void runRouletteSelection(float * populationFitness, thrust::device_ptr<float> d
 
 	total_fitness(devicePtrPopulationFitness, sumPopulationFitness);
 
-	rouletteSelection<POPULATION / POPULATIONS> << <(ELITE_MEMBERS - 511) / 512, 512 >> >(populationFitness, chosenIndices, sumPopulationFitness, globalState);
+	rouletteSelection<POPULATION / POPULATIONS> << <(ELITE_MEMBERS + 511) / 512, 512 >> >(populationFitness, chosenIndices, sumPopulationFitness, globalState);
 }
 
 /// <summary>
@@ -1412,7 +1412,7 @@ int main(void) {
 		HANDLE_ERROR(
 			cudaMalloc(&d_sumFitness, POPULATIONS*sizeof(float)));
 
-		thrust::device_ptr<float> dev_total_fitness = thrust::device_pointer_cast(d_sumFitness);
+		thrust::device_ptr<float> dev_fitnessSum = thrust::device_pointer_cast(d_sumFitness);
 
 		int *d_linkCrossPoints, *d_rulesCrossPoints;				// Arrays for random crossover indices
 		HANDLE_ERROR(
@@ -1450,7 +1450,7 @@ int main(void) {
 		/** Create a file to save algorithm's evolution **/
 
 		char buf[0x100];
-		_snprintf(buf, sizeof(buf), "P-Sexec%d-%s_pob%dpops%d_MIGRs%d_gen%dfreq%d.csv", e, "ELITE", POPULATION, POPULATIONS, ELEMENTS_TO_MIGRATE / POPULATIONS, GENERATIONS, MIGRATION_FREQUENCY);
+		_snprintf(buf, sizeof(buf), "P-Sexec%d-05mut%s_pob%dpops%d_MIGRs%d_gen%dfreq%d.csv", e, "ELITE", POPULATION, POPULATIONS, ELEMENTS_TO_MIGRATE / POPULATIONS, GENERATIONS, MIGRATION_FREQUENCY);
 
 		f = fopen(buf, "w");
 		if (f == NULL)
@@ -1494,6 +1494,7 @@ int main(void) {
 
 			/** Parent selection **/
 			runEliteSelection(device_ptr_fitness, dev_indices);
+			//	runRouletteSelection(d_populationFitness, device_ptr_fitness, d_chosenIndividuals, devStates, dev_fitnessSum);
 			gpuErrchk(cudaPeekAtLastError());
 
 			/** Show progress in console **/
