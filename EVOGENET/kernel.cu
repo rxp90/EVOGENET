@@ -38,7 +38,7 @@ struct inverse
 {
 	__host__ __device__
 		T operator()(const T& x) const {
-		return 1 / (pow(x, 1));
+		return 1 / x;
 	}
 };
 
@@ -49,25 +49,30 @@ struct inverse
 #define IDX2C(i, j, ld) (((j)*(ld))+(i))
 #define MAX_INPUTS 32
 
-#define POPULATIONS 1
+#define POPULATIONS 2
 #define RULES_PER_NODE 1
 #define NODES 32
-#define POPULATION (200 * POPULATIONS)
+#define POPULATION (100*POPULATIONS)
+
+#define COLS 32		// Square root of a single population size
 #define ELITE_MEMBERS (POPULATION)
-#define ELEMENTS_TO_MIGRATE (2*POPULATIONS)
-#define MIGRATION_FREQUENCY 2
+#define ELEMENTS_TO_MIGRATE (16*POPULATIONS)
+#define MIGRATION_FREQUENCY 16
 
 #define MAX_CONNECTIVITY_DISTANCE 0.1
 
-#define GENERATIONS 100000
-#define EXECUTIONS 10
+#define GENERATIONS 100
+#define EXECUTIONS 1
 #define LINK_MUTATION_PROB 0.001  
-#define RULE_MUTATION_PROB 0.5
+#define RULE_MUTATION_PROB 0.001
 
 #define TOTAL_LINKS (NODES*MAX_INPUTS)
 
 #define ROULETTE 0
 #define ELITE 1
+#define CELLULAR 2
+
+#define SELECTION ELITE
 
 #define MOST 0
 #define ABSOLUTE_REPRESSOR 1
@@ -96,13 +101,13 @@ network GOAL_NETWORK_HOST = {
 	{ 1, 0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
 };
 
-float LAMBDA_HOST[POPULATIONS] = { .9f };
+float LAMBDA_HOST[POPULATIONS] = { .9f, .9f };
 
 __constant__ float LAMBDA_VALUES[POPULATIONS];
 
 __constant__ float INIT_CONNECTIVITY;
 
-float BEST_FITNESS_HOST = 1.0;
+float BEST_FITNESS_HOST = 1.0f;
 
 
 /// <summary>
@@ -127,7 +132,7 @@ __device__ unsigned int WangHash(unsigned int a){
 /// <returns>Random float</returns>
 __device__ float generate(curandState* globalState)
 {
-	int ind = blockIdx.x*blockDim.x + threadIdx.x;
+	const unsigned int ind = blockIdx.x*blockDim.x + threadIdx.x;
 
 	curandState localState = globalState[ind];
 	float RANDOM = curand_uniform(&localState);
@@ -145,7 +150,7 @@ __device__ float generate(curandState* globalState)
 /// <returns></returns>
 __device__ void generate_v2(curandState* globalState, float * values, unsigned int count)
 {
-	int ind = blockIdx.x*blockDim.x + threadIdx.x;
+	const unsigned int ind = blockIdx.x*blockDim.x + threadIdx.x;
 
 	curandState localState = globalState[ind];
 	for (int i = 0; i < count; i++){
@@ -163,7 +168,7 @@ __device__ void generate_v2(curandState* globalState, float * values, unsigned i
 /// <returns></returns>
 __global__ void setup_kernel(curandState * state)
 {
-	int id = blockIdx.x*blockDim.x + threadIdx.x;
+	const unsigned int id = blockIdx.x*blockDim.x + threadIdx.x;
 	unsigned int seed = 1234;
 	curand_init(seed, id, 0, &state[id]);
 }
@@ -175,7 +180,7 @@ __global__ void setup_kernel(curandState * state)
 /// <returns></returns>
 __global__ void setupCurandDiffSeed(curandState * state)
 {
-	int id = blockIdx.x*blockDim.x + threadIdx.x;
+	const unsigned int id = blockIdx.x*blockDim.x + threadIdx.x;
 	unsigned int seed = (unsigned int)clock64();
 	curand_init(WangHash(seed) + id, 0, 0, &state[id]);
 }
@@ -332,9 +337,11 @@ void inline print_progress(float progress, float best)
 void printParameters(){
 	unsigned int width = 35;
 	printf("TOTAL POPULATION: %*d\n", width, POPULATION);
-	printf("ISLANDS (POPULATIONS): %*d\n", width, POPULATIONS);
-	printf("MIGRATIONS/ISLAND: %*d\n", width, ELEMENTS_TO_MIGRATE / POPULATIONS);
-	printf("MIGRATION FREQUENCY: %*d\n", width, MIGRATION_FREQUENCY);
+	if (POPULATIONS > 1){
+		printf("ISLANDS (POPULATIONS): %*d\n", width, POPULATIONS);
+		printf("MIGRATIONS/ISLAND: %*d\n", width, ELEMENTS_TO_MIGRATE / POPULATIONS);
+		printf("MIGRATION FREQUENCY: %*d\n", width, MIGRATION_FREQUENCY);
+	}
 	printf("LINK MUTATION PROB: %*.3f\n", width, LINK_MUTATION_PROB);
 	printf("RULE MUTATION PROB: %*.3f\n", width, RULE_MUTATION_PROB);
 	printf("GENERATIONS: %*d\n", width, GENERATIONS);
@@ -350,7 +357,7 @@ void printParameters(){
 /// <param name="node_index">Node index into nodes[].</param>
 /// <returns></returns>
 template <unsigned int individualsPerBlock>
-__device__ void applyRules(char links[], char rule, char nodes[], unsigned int node_index)
+__device__ void applyRules(const char links[], const char rule, char nodes[], const unsigned int node_index)
 {
 
 	/*
@@ -392,7 +399,7 @@ __device__ void applyRules(char links[], char rule, char nodes[], unsigned int n
 	char ruleIndexedStates[4];
 
 	const char stableState = 5;
-
+	char indexToMostNewState, indexToAbsReprNewState, indexToJointActNewState, indexToJointReprNewState;
 	for (char j = 0; j < stableState; j++){
 
 		// Reset counters
@@ -411,22 +418,22 @@ __device__ void applyRules(char links[], char rule, char nodes[], unsigned int n
 		}
 
 		// Generate index to all posible states
-		char indexToMostNewState = (sharedInputCount[0 + node_index * 3] > sharedInputCount[1 + node_index * 3]) - (sharedInputCount[0 + node_index * 3] < sharedInputCount[1 + node_index * 3]); // (+ > -) - ( + < -)
+		indexToMostNewState = (sharedInputCount[0 + node_index * 3] > sharedInputCount[1 + node_index * 3]) - (sharedInputCount[0 + node_index * 3] < sharedInputCount[1 + node_index * 3]); // (+ > -) - ( + < -)
 		ruleIndexedStates[MOST] = (-(indexToMostNewState + 1)*(3 * indexToMostNewState - 4)) >> 1;
 
-		char indexToAbsReprNewState = sharedInputCount[1 + node_index * 3] > 0;
+		indexToAbsReprNewState = sharedInputCount[1 + node_index * 3] > 0;
 		ruleIndexedStates[ABSOLUTE_REPRESSOR] = 2 - (indexToAbsReprNewState << 1);
 
-		char indexToJointActNewState = sharedInputCount[0 + node_index * 3] > 1;
+		indexToJointActNewState = sharedInputCount[0 + node_index * 3] > 1;
 		ruleIndexedStates[JOINT_ACTIVATORS] = 2 - indexToJointActNewState;
 
-		char indexToJointReprNewState = sharedInputCount[1 + node_index * 3] > 1;
+		indexToJointReprNewState = sharedInputCount[1 + node_index * 3] > 1;
 		ruleIndexedStates[JOINT_REPRESSORS] = 2 - (indexToJointReprNewState << 1);
 
 		// Change node state
 		nodes[node_index] = states[2] = states[ruleIndexedStates[rule]];
 
-		__syncthreads(); // Not needed but increases performance. Due to bank conflicts?
+	//	__syncthreads(); // Not needed but increases performance. Due to bank conflicts?
 	}
 
 }
@@ -466,38 +473,6 @@ __global__ void linkDistance(network population[], float *distances, char goal_l
 			distances[IDX2C(individual, link + i, POPULATION)] = distance;
 		}
 
-	}
-}
-template <unsigned int links_per_node>
-__global__ void link_distance_v3(network population[], float *distances, int size, char goal_links[]){
-
-	const unsigned int index = threadIdx.x + blockDim.x * blockIdx.x;
-	const unsigned int individual = (index*links_per_node) / TOTAL_LINKS;
-	const unsigned int link = (index*links_per_node) % TOTAL_LINKS;
-	const unsigned int population_index = individual / (POPULATION / POPULATIONS);
-
-	char links[links_per_node];
-	char goal[links_per_node];
-	float distances_local[links_per_node];
-
-	if (individual < POPULATION){
-		int2 *p = reinterpret_cast<int2*>(population[individual].links + link);
-		int2 links_vec = p[0];
-		reinterpret_cast<int2*>(links)[0] = links_vec;
-
-		int2 *p2 = reinterpret_cast<int2*>(goal_links + link);
-		int2 goal_vec = p2[0];
-		reinterpret_cast<int2*>(goal)[0] = goal_vec;
-
-		for (char i = 0; i < links_per_node; i++){
-			distances_local[i] = (links[i] != goal[i]);
-			distances_local[i] *= (1 - LAMBDA_VALUES[population_index]) / (TOTAL_LINKS);
-		}
-		for (char j = 0; j < 2; j++){
-			float4 *p3 = reinterpret_cast<float4*>(distances_local + j * 4);
-			float4 dist_vec = p3[0];
-			reinterpret_cast<float4*>(distances)[IDX2C(individual, link, POPULATION) + j] = dist_vec;
-		}
 	}
 }
 
@@ -618,7 +593,7 @@ cublasStatus_t populationFitness(const float* linkFitness, const float* nodeFitn
 /// <param name="size">Number of rules to generate.</param>
 /// <param name="globalState">curandState.</param>
 /// <returns></returns>
-__device__ void generateRandomRules(char individualRules[], int size, curandState * globalState)
+__device__ void generateRandomRules(char individualRules[], const int size, curandState * globalState)
 {
 	int i, rule;
 	float randoms[RULES_PER_NODE*NODES];
@@ -725,7 +700,7 @@ template <unsigned int blockSize>
 /// <param name="links">The links.</param>
 /// <param name="connectivity">Connectivity result.</param>
 /// <returns></returns>
-__device__ void calculeConnectivity(char links[], float *connectivity){
+__device__ void calculeConnectivity(const char links[], float *connectivity){
 
 	const unsigned int tid = threadIdx.x;
 
@@ -835,38 +810,49 @@ __device__ void calculeConnectivity(char links[], float *connectivity){
 	__syncthreads();
 }
 
-__global__ void sus_selection_v1(float population_fitness[], float total_fitness, int parents, int indices[], curandState *globalState)
-{
-	// Calculate distance between the pointers
-	float pointer_distance = total_fitness / parents;
-	// Pick random number between 0 and p
-	float start = generate(globalState) * pointer_distance;
-	int index = 0;
-	float sum = population_fitness[index];
-	int i;
-	float pointer;
-	for (i = 0; i < parents / POPULATIONS; i++)
-	{
-		pointer = start + i*pointer_distance;
-		if (sum >= pointer)
-		{
-			indices[i] = index;
-		}
-		else
-		{
-			for (++index; index < POPULATION; index++)
-			{
-				sum += population_fitness[index];
-				if (sum >= pointer)
-				{
-					indices[i] = index;
-					break;
-				}
-			}
-		}
-	}
-}
+/// <summary>
+/// Fills indices array with the index of the best individual within a neighborhood.
+/// </summary>
+/// <param name="populationFitness">The population fitness.</param>
+/// <param name="selectedIndices">The selected indices.</param>
+/// <returns></returns>
+template <unsigned int blockSize, unsigned int populationOffset, int cols>
+__global__ void cellularNeighborhood(const float populationFitness[], int selectedIndices[]){
 
+	__shared__ float fitnessValues[blockSize];
+
+	const int tid = threadIdx.x;
+
+	const unsigned int populationIndex = blockIdx.x;		// One block per population/neighborhood
+	const unsigned int row = tid / cols;
+
+	const int up = (tid - cols + POPULATION / POPULATIONS) % (POPULATION / POPULATIONS);
+	const int down = (tid + cols) % POPULATION / POPULATIONS;
+	const int left = (((tid - 1) % cols + cols) % cols) + row*cols;
+	const int right = (tid + 1) % cols + row*cols;
+
+	fitnessValues[threadIdx.x] = populationFitness[tid + populationOffset * populationIndex];
+
+	__syncthreads();
+
+	unsigned int indexBest = up;
+	float bestFitness = fitnessValues[up];
+
+	if (fitnessValues[down] < bestFitness){
+		indexBest = down;
+		bestFitness = fitnessValues[down];
+	}
+	if (fitnessValues[right] < bestFitness){
+		indexBest = right;
+		bestFitness = fitnessValues[right];
+	}
+	if (fitnessValues[left] < bestFitness){
+		indexBest = left;
+	}
+
+	selectedIndices[tid + populationOffset * populationIndex] = indexBest + populationIndex*populationOffset;
+
+}
 /// <summary>
 /// Updates the best individual and writes the current best fitness into a file.
 /// </summary>
@@ -876,25 +862,31 @@ __global__ void sus_selection_v1(float population_fitness[], float total_fitness
 /// <param name="f">Output file.</param>
 /// <param name="bestFitness">The best fitness.</param>
 /// <param name="bestIndividual">The best individual.</param>
-void updateBestIndividual(network population[], thrust::device_ptr<float> populationFitness, int generation, FILE *f, float * bestFitness, network * bestIndividual){
+/// <param name="handle">cuBLAS handle</param>
+void updateBestIndividual(network population[], const float populationFitness[], const int generation, FILE *f, float * bestFitness, network * bestIndividual, cublasHandle_t handle){
 
-	thrust::device_ptr<float> min_ptr = thrust::min_element(populationFitness, populationFitness + POPULATION);
-	// Best fitness
-	float min = min_ptr[0];
+	int position = 0;
+	float min = 1.f;
 
-	// Index of the individual with the best fitness
-	int position = thrust::distance(populationFitness, min_ptr);
+	cublasStatus_t error = cublasIsamin(handle, POPULATION, populationFitness, 1, &position);
 
-	// Update if current fitness is better than the previous one
-	if (min < *(bestFitness)){
-		*bestFitness = min;
+	position -= 1;		// CUBLAS uses 1-base indexing
+	if (error == CUBLAS_STATUS_SUCCESS && position >= 0 && position < POPULATION){
 		HANDLE_ERROR(
-			cudaMemcpy(bestIndividual, population + position, sizeof(network), cudaMemcpyDeviceToHost)
+			cudaMemcpy(&min, populationFitness + position, sizeof(float), cudaMemcpyDeviceToHost)
 			);
-	}
 
-	// Write to file
-	fprintf(f, "%d,%.8f\n", generation, *bestFitness);
+
+		// Update if current fitness is better than the previous one
+		if (min < *(bestFitness)){
+			*bestFitness = min;
+			HANDLE_ERROR(
+				cudaMemcpy(bestIndividual, population + position, sizeof(network), cudaMemcpyDeviceToHost)
+				);
+		}
+		// Write to file
+		fprintf(f, "%d,%.8f\n", generation, *bestFitness);
+	}
 
 }
 
@@ -931,7 +923,7 @@ __global__ void sequence(int * indices){
 /// <returns></returns>
 __global__ void generateLinkCrossPoints(int *points, curandState *globalState){
 	const unsigned int index = threadIdx.x + blockDim.x *blockIdx.x;
-	int N = ELITE_MEMBERS / 2;
+	const int N = ELITE_MEMBERS / 2;
 	if (index < N){
 		points[index] = generate(globalState)*TOTAL_LINKS;
 	}
@@ -944,7 +936,7 @@ __global__ void generateLinkCrossPoints(int *points, curandState *globalState){
 /// <returns></returns>
 __global__ void generateRuleCrossoverPoints(int *points, curandState *globalState){
 	const unsigned int index = threadIdx.x + blockDim.x *blockIdx.x;
-	int N = ELITE_MEMBERS / 2;
+	const int N = ELITE_MEMBERS / 2;
 	if (index < N){
 		points[index] = generate(globalState)*RULES_PER_NODE*NODES;
 	}
@@ -958,77 +950,61 @@ __global__ void generateRuleCrossoverPoints(int *points, curandState *globalStat
 /// <param name="selectedIndices">The selected individual indices.</param>
 /// <param name="linkCrossIndices">The crossovers point.</param>
 /// <returns></returns>
-template <unsigned int blockSize, unsigned int offset>
+template <unsigned int blockSize, unsigned int offset, unsigned int selection>
 __global__ void crossover(network population[], const int *selectedIndices, const int *linkCrossIndices){
 
 	const unsigned int populationIndex = (blockIdx.x * 2) / (POPULATION / POPULATIONS);
 
-	const int indexParent1 = selectedIndices[blockIdx.x * 2] + offset*populationIndex;
-	const int indexParent2 = selectedIndices[blockIdx.x * 2 + 1] + offset*populationIndex;
+	int indexParent1;
+	int indexParent2;
 
-	const int indices[2] = { indexParent1, indexParent2 };
+	if (selection == CELLULAR){
+		indexParent1 = blockIdx.x;
+		indexParent2 = selectedIndices[blockIdx.x] + offset*populationIndex;
+	}
+	else{
+		indexParent1 = selectedIndices[blockIdx.x * 2] + offset*populationIndex;
+		indexParent2 = selectedIndices[blockIdx.x * 2 + 1] + offset*populationIndex;
+	}
 
 	const unsigned int tid = threadIdx.x;
 
 	__shared__ char linksChild1[TOTAL_LINKS];
 	__shared__ char linksChild2[TOTAL_LINKS];
 
-	__shared__ unsigned char rules_child_2[RULES_PER_NODE*NODES];
+	__shared__ unsigned char rulesChild2[RULES_PER_NODE*NODES];
 
 	const int linkCrossPoint = linkCrossIndices[blockIdx.x];
 	const char ruleCrossPoint = (linkCrossPoint / NODES) + 1;
 
 	/** Copy the children's links **/
 
-	const char links_condition = (tid < linkCrossPoint);
-
 	if (tid < TOTAL_LINKS){
-		linksChild1[tid] = population[indices[!links_condition]].links[tid];
-		linksChild2[tid] = population[indices[links_condition]].links[tid];
+		if (tid < linkCrossPoint){
+			linksChild1[tid] = population[indexParent1].links[tid];
+			linksChild2[tid] = population[indexParent2].links[tid];
+		}
+		else{
+			linksChild1[tid] = population[indexParent2].links[tid];
+			linksChild2[tid] = population[indexParent1].links[tid];
+		}
+
 	}
 	if (tid + blockSize < TOTAL_LINKS){
-		linksChild1[tid + blockSize] = population[indices[!links_condition]].links[tid + blockSize];
-		linksChild2[tid + blockSize] = population[indices[links_condition]].links[tid + blockSize];
+		if (tid + blockSize < linkCrossPoint){
+			linksChild1[tid + blockSize] = population[indexParent1].links[tid + blockSize];
+			linksChild2[tid + blockSize] = population[indexParent2].links[tid + blockSize];
+		}
+		else{
+			linksChild1[tid + blockSize] = population[indexParent2].links[tid + blockSize];
+			linksChild2[tid + blockSize] = population[indexParent1].links[tid + blockSize];
+		}
 	}
 
-	const char rules_condition = (tid >= ruleCrossPoint);
-
-	if (tid < RULES_PER_NODE*NODES){
-		rules_child_2[tid] = population[indices[!rules_condition]].rules[tid];
-	}
-	/*
-	if (tid < size){
-	if (tid < link_crossover_index){
-	links_child_1[tid] = population[index_parent_1].links[tid];
-	links_child_2[tid] = population[index_parent_2].links[tid];
-	}
-	else{
-	links_child_1[tid] = population[index_parent_2].links[tid];
-	links_child_2[tid] = population[index_parent_1].links[tid];
-	}
+	if (tid < RULES_PER_NODE*NODES && tid >= ruleCrossPoint){
+		rulesChild2[tid] = population[indexParent1].rules[tid];
 	}
 
-	if (tid + blockSize < size){
-	if (tid + blockSize < link_crossover_index){
-	links_child_1[tid + blockSize] = population[index_parent_1].links[tid + blockSize];
-	links_child_2[tid + blockSize] = population[index_parent_2].links[tid + blockSize];
-	}
-	else{
-	links_child_1[tid + blockSize] = population[index_parent_2].links[tid + blockSize];
-	links_child_2[tid + blockSize] = population[index_parent_1].links[tid + blockSize];
-	}
-	}
-	*/
-	/*if (tid < rules){
-	if (tid < rule_crossover_index){
-	//	rules_child_1[tid] = population[index_parent_1].rules[tid];
-	//	rules_child_2[tid] = population[index_parent_2].rules[tid];
-	}
-	else{
-	//	rules_child_1[tid] = population[index_parent_2].rules[tid];
-	rules_child_2[tid] = population[index_parent_1].rules[tid];
-	}
-	}*/
 
 	__syncthreads();
 
@@ -1042,15 +1018,15 @@ __global__ void crossover(network population[], const int *selectedIndices, cons
 	if (fabsf(child1Connectivity - INIT_CONNECTIVITY) < MAX_CONNECTIVITY_DISTANCE){
 		// Links
 		if (tid > linkCrossPoint && tid < TOTAL_LINKS){
-			population[indices[0]].links[tid] = linksChild1[tid];
+			population[indexParent1].links[tid] = linksChild1[tid];
 		}
 		if (blockSize >= 512 && ((tid + 512) > linkCrossPoint) && (tid + 512) < TOTAL_LINKS){
-			population[indices[0]].links[tid + 512] = linksChild1[tid + 512];
+			population[indexParent1].links[tid + 512] = linksChild1[tid + 512];
 		}
 
 		// Rules
 		if (tid < RULES_PER_NODE*NODES && tid >= ruleCrossPoint){
-			population[indices[0]].rules[tid] = population[indices[1]].rules[tid];
+			population[indexParent1].rules[tid] = population[indexParent2].rules[tid];
 		}
 	}
 
@@ -1060,15 +1036,15 @@ __global__ void crossover(network population[], const int *selectedIndices, cons
 	if (fabsf(child2Connectivity - INIT_CONNECTIVITY) < MAX_CONNECTIVITY_DISTANCE){
 		// Links
 		if (tid > linkCrossPoint && tid < TOTAL_LINKS){
-			population[indices[1]].links[tid] = linksChild2[tid];
+			population[indexParent2].links[tid] = linksChild2[tid];
 		}
 		if (blockSize >= 512 && ((tid + 512) > linkCrossPoint) && (tid + 512) < TOTAL_LINKS){
-			population[indices[1]].links[tid + 512] = linksChild2[tid + 512];
+			population[indexParent2].links[tid + 512] = linksChild2[tid + 512];
 		}
 
 		// Rules
 		if (tid < RULES_PER_NODE*NODES && tid >= ruleCrossPoint){
-			population[indices[1]].rules[tid] = rules_child_2[tid];
+			population[indexParent2].rules[tid] = rulesChild2[tid];
 		}
 	}
 
@@ -1120,84 +1096,36 @@ __global__ void rouletteSelection(float populationFitness[], int chosenIndices[]
 
 }
 
-__global__ void sus_selection(float pop_fitness[], int indices[], thrust::device_ptr<float> total_fitness, curandState *globalState){
-
-	const unsigned int index = threadIdx.x + blockIdx.x*blockDim.x;
-	const unsigned int population_index = index / (POPULATION / POPULATIONS);
-	const unsigned int pop_offset = POPULATION / POPULATIONS;
-
-	__shared__ float randoms[POPULATIONS];
-
-	if (index < POPULATION && (index % POPULATIONS) == 0){
-		randoms[population_index] = generate(globalState);
-	}
-
-	__syncthreads();
-
-	// Tener un random por  poblacion
-	if (index < POPULATION){
-		double p = total_fitness[population_index] / (POPULATION / POPULATIONS);
-		int pick = pop_offset*population_index;
-		double start = randoms[population_index] * p;
-		double sum = 1 / pop_fitness[pick];
-		double pointer = start + (index % (POPULATION / POPULATIONS)) * p;
-
-		if (sum >= pointer){
-			indices[index] = pick;
-		}
-		else{
-			for (++pick; pick < POPULATION; pick++){
-				sum += 1 / pop_fitness[pick];
-				if (sum >= pointer){
-					indices[index] = pick;
-					break;
-				}
-			}
-		}
-
-	}
-
-}
-
 /// <summary>
 /// Migrates the number of individuals specified by ELEMENTS_TO_MIGRATE constant between adjacents populations.
 /// </summary>
 /// <param name="population">The entire population.</param>
 /// <param name="orderedIndices">The ordered indices.</param>
 /// <returns></returns>
-template <unsigned int elements_per_population, unsigned int offset>
+template <unsigned int elementsPerPopulation, unsigned int offset>
 __global__ void migrate(network population[], int orderedIndices[]){
-
-	const unsigned int index = blockIdx.x;
-	const unsigned int tid = threadIdx.x;
-	const unsigned int pop_index = index / elements_per_population;
-	const unsigned int offset_elements = (POPULATION / POPULATIONS) * 2 - elements_per_population;
+	const unsigned int index = (blockIdx.x * 2) + (threadIdx.x >> 6);
+	const unsigned int tid = threadIdx.x % 64;
+	const unsigned int populationIndex = index / elementsPerPopulation;
+	const unsigned int offsetElement = (POPULATION / POPULATIONS) * 2 - elementsPerPopulation;
 
 	if (index < ELEMENTS_TO_MIGRATE){
-		unsigned int id_best = pop_index*offset + index%elements_per_population;
-		unsigned int id_worst = (id_best + offset_elements) % ELITE_MEMBERS;
-		unsigned int index_best = orderedIndices[id_best];
-		unsigned int index_worst = orderedIndices[id_worst];
+		const unsigned int idBest = populationIndex*offset + index%elementsPerPopulation;
+		const unsigned int idWorst = (idBest + offsetElement) % ELITE_MEMBERS;
+		const unsigned int bestIndividual = orderedIndices[idBest];
+		const unsigned int worstIndividual = orderedIndices[idWorst];
+		int4 *pTarget, *pSource;
 
-		population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].links[tid] = population[(pop_index*POPULATION / POPULATIONS) + index_best].links[tid];
+		pTarget = reinterpret_cast<int4*>(population[worstIndividual + ((populationIndex + 1)*POPULATION / POPULATIONS) % POPULATION].links + tid * 16);
+		pSource = reinterpret_cast<int4*>(population[(populationIndex*POPULATION / POPULATIONS) + bestIndividual].links + tid * 16);
 
-		switch (blockDim.x){
-		case 64:
-			population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].links[tid + 64] = population[(pop_index*POPULATION / POPULATIONS) + index_best].links[tid + 64];
-		case 128:
-			population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].links[tid + 128] = population[(pop_index*POPULATION / POPULATIONS) + index_best].links[tid + 128];
-		case 256:
-			population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].links[tid + 256] = population[(pop_index*POPULATION / POPULATIONS) + index_best].links[tid + 256];
-		case 512:
-			population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].links[tid + 512] = population[(pop_index*POPULATION / POPULATIONS) + index_best].links[tid + 512];
-			break;
-		}
+		*pTarget = *pSource;
 
 		if (tid < NODES){
-			population[index_worst + ((pop_index + 1)*POPULATION / POPULATIONS) % POPULATION].rules[tid] = population[(pop_index*POPULATION / POPULATIONS) + index_best].rules[tid];
+			population[worstIndividual + ((populationIndex + 1)*POPULATION / POPULATIONS) % POPULATION].rules[tid] = population[(populationIndex*POPULATION / POPULATIONS) + bestIndividual].rules[tid];
 		}
-
 	}
+
 }
 
 /// <summary>
@@ -1247,6 +1175,17 @@ void runEliteSelection(thrust::device_ptr<float> populationFitness, thrust::devi
 }
 
 /// <summary>
+/// Runs elite cellular selection.
+/// </summary>
+/// <param name="populationFitness">The population fitness.</param>
+/// <param name="orderedIndices">The ordered indices.</param>
+void runEliteCellularSelection(float populationFitness[], int selectedIndices[]){
+	cellularNeighborhood < POPULATION / POPULATIONS, POPULATION / POPULATIONS, COLS> << <POPULATIONS, POPULATION / POPULATIONS >> >(populationFitness, selectedIndices);
+	gpuErrchk(cudaPeekAtLastError());
+
+}
+
+/// <summary>
 /// Runs roulette selection.
 /// </summary>
 /// <param name="populationFitness">The population fitness.</param>
@@ -1270,13 +1209,14 @@ void runRouletteSelection(float * populationFitness, thrust::device_ptr<float> d
 /// <param name="chosenIndices">The chosen indices.</param>
 void migrate(unsigned int currentGeneration, unsigned int migrationFrequency, network * population, int * chosenIndices){
 	if (POPULATIONS > 1 && (currentGeneration%migrationFrequency) == 0){
-		migrate<ELEMENTS_TO_MIGRATE / POPULATIONS, ELITE_MEMBERS / POPULATIONS> << <ELEMENTS_TO_MIGRATE, 256 >> >(population, chosenIndices);
+		migrate<ELEMENTS_TO_MIGRATE / POPULATIONS, POPULATION / POPULATIONS> << <ELEMENTS_TO_MIGRATE / 2, 128 >> >(population, chosenIndices);
 		gpuErrchk(cudaPeekAtLastError());
 	}
 }
 
 
 int main(void) {
+
 
 	for (int e = 0; e < EXECUTIONS; e++){		// Runs EXECUTIONS independent runs
 
@@ -1450,7 +1390,7 @@ int main(void) {
 		/** Create a file to save algorithm's evolution **/
 
 		char buf[0x100];
-		_snprintf(buf, sizeof(buf), "P-Sexec%d-05mut%s_pob%dpops%d_MIGRs%d_gen%dfreq%d.csv", e, "ELITE", POPULATION, POPULATIONS, ELEMENTS_TO_MIGRATE / POPULATIONS, GENERATIONS, MIGRATION_FREQUENCY);
+		_snprintf(buf, sizeof(buf), "P-Sexec%d%s_pob%dpops%d_MIGRs%d_gen%dfreq%d.csv", e, "ELITE", POPULATION, POPULATIONS, ELEMENTS_TO_MIGRATE / POPULATIONS, GENERATIONS, MIGRATION_FREQUENCY);
 
 		f = fopen(buf, "w");
 		if (f == NULL)
@@ -1489,20 +1429,34 @@ int main(void) {
 			computeFitness(stream3, stream4, d_population, d_singleLinkDistances, d_linksOnesVector, d_individualsLinkFitness, handle, d_singleNodeDistances, d_nodesOnesVector, d_individualsNodeFitness, d_populationFitness, d_goalLinks, d_initNodes, d_goalNodes);
 
 			/** Save best individual **/
-			updateBestIndividual(d_population, device_ptr_fitness, i, f, &h_bestFitness, &h_bestIndividual);
+			updateBestIndividual(d_population, d_populationFitness, i, f, &h_bestFitness, &h_bestIndividual, handle);
 			gpuErrchk(cudaPeekAtLastError());
 
 			/** Parent selection **/
-			runEliteSelection(device_ptr_fitness, dev_indices);
-			//	runRouletteSelection(d_populationFitness, device_ptr_fitness, d_chosenIndividuals, devStates, dev_fitnessSum);
+
+			switch (SELECTION){
+			case ELITE:
+				runEliteSelection(device_ptr_fitness, dev_indices);
+				break;
+			case ROULETTE:
+				runRouletteSelection(d_populationFitness, device_ptr_fitness, d_chosenIndividuals, devStates, dev_fitnessSum);
+				break;
+			case CELLULAR:
+				runEliteCellularSelection(d_populationFitness, d_chosenIndividuals);
+				break;
+			}
+
 			gpuErrchk(cudaPeekAtLastError());
+
+			/** Migrate elements **/
+			migrate(i, MIGRATION_FREQUENCY, d_population, d_chosenIndividuals);
 
 			/** Show progress in console **/
 			print_progress((float)i / (float)GENERATIONS, h_bestFitness);
 			gpuErrchk(cudaPeekAtLastError());
 
 			/** Crossover **/
-			crossover<512, POPULATION / POPULATIONS> << <ELITE_MEMBERS / 2, (TOTAL_LINKS) / 2, 0, stream2 >> >(d_population, d_chosenIndividuals, d_linkCrossPoints);
+			crossover<512, POPULATION / POPULATIONS, SELECTION> << <ELITE_MEMBERS / 2, (TOTAL_LINKS) / 2, 0, stream2 >> >(d_population, d_chosenIndividuals, d_linkCrossPoints);
 			gpuErrchk(cudaPeekAtLastError());
 
 			/** Mutation **/
@@ -1516,9 +1470,6 @@ int main(void) {
 			/** Generate new crossover indices **/
 			generateLinkCrossPoints << < (ELITE_MEMBERS / 2 + 447) / 448, 448, 0, stream2 >> >(d_linkCrossPoints, devStates);
 			gpuErrchk(cudaPeekAtLastError());
-
-			/** Migrate elements **/
-			migrate(i, MIGRATION_FREQUENCY, d_population, d_chosenIndividuals);
 
 			//	gpuErrchk( cudaDeviceSynchronize() );
 		}
