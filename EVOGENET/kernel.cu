@@ -49,10 +49,10 @@ struct inverse
 #define IDX2C(i, j, ld) (((j)*(ld))+(i))
 #define MAX_INPUTS 32
 
-#define POPULATIONS 2
+#define POPULATIONS 1	//DO NOT FORGET TO FILL LAMDA_HOST PROPERLY
 #define RULES_PER_NODE 1
 #define NODES 32
-#define POPULATION (100*POPULATIONS)
+#define POPULATION (512*POPULATIONS)
 
 #define COLS 32		// Square root of a single population size
 #define ELITE_MEMBERS (POPULATION)
@@ -61,8 +61,8 @@ struct inverse
 
 #define MAX_CONNECTIVITY_DISTANCE 0.1
 
-#define GENERATIONS 100
-#define EXECUTIONS 1
+#define GENERATIONS 100000
+#define EXECUTIONS 3
 #define LINK_MUTATION_PROB 0.001  
 #define RULE_MUTATION_PROB 0.001
 
@@ -101,7 +101,7 @@ network GOAL_NETWORK_HOST = {
 	{ 1, 0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
 };
 
-float LAMBDA_HOST[POPULATIONS] = { .9f, .9f };
+float LAMBDA_HOST[POPULATIONS] = { .9f };
 
 __constant__ float LAMBDA_VALUES[POPULATIONS];
 
@@ -433,7 +433,7 @@ __device__ void applyRules(const char links[], const char rule, char nodes[], co
 		// Change node state
 		nodes[node_index] = states[2] = states[ruleIndexedStates[rule]];
 
-	//	__syncthreads(); // Not needed but increases performance. Due to bank conflicts?
+		//	__syncthreads(); // Not needed but increases performance. Due to bank conflicts?
 	}
 
 }
@@ -850,7 +850,7 @@ __global__ void cellularNeighborhood(const float populationFitness[], int select
 		indexBest = left;
 	}
 
-	selectedIndices[tid + populationOffset * populationIndex] = indexBest + populationIndex*populationOffset;
+	selectedIndices[tid + populationOffset * populationIndex] = indexBest;
 
 }
 /// <summary>
@@ -1213,6 +1213,12 @@ void migrate(unsigned int currentGeneration, unsigned int migrationFrequency, ne
 		gpuErrchk(cudaPeekAtLastError());
 	}
 }
+__global__ void randomMigrationIndices(int migrationIndices[], curandState* globalState){
+	const unsigned int index = threadIdx.x + blockDim.x*blockIdx.x;
+	if (index < POPULATION){
+		migrationIndices[index] = (POPULATION / POPULATIONS) * generate(globalState);
+	}
+}
 
 
 int main(void) {
@@ -1345,7 +1351,16 @@ int main(void) {
 
 		HANDLE_ERROR(
 			cudaMalloc(&d_chosenIndividuals, ELITE_MEMBERS*sizeof(int)));
+		/*************************************/
+		/*************************************/
+		/*************************************/
+		int * d_migrationIndices;
+		HANDLE_ERROR(
+			cudaMalloc(&d_migrationIndices, ELITE_MEMBERS*sizeof(int)));
+		/*************************************/
+		/*************************************/
 
+		/*************************************/
 		thrust::device_ptr<int> dev_indices = thrust::device_pointer_cast(d_chosenIndividuals);
 
 		float * d_sumFitness;					// Holds total fitness of each population
@@ -1390,7 +1405,7 @@ int main(void) {
 		/** Create a file to save algorithm's evolution **/
 
 		char buf[0x100];
-		_snprintf(buf, sizeof(buf), "P-Sexec%d%s_pob%dpops%d_MIGRs%d_gen%dfreq%d.csv", e, "ELITE", POPULATION, POPULATIONS, ELEMENTS_TO_MIGRATE / POPULATIONS, GENERATIONS, MIGRATION_FREQUENCY);
+		_snprintf(buf, sizeof(buf), "P-Sexec%d%s_pob%dpops%d_MIGRs%d_gen%dfreq%d.csv", e, "EL", POPULATION, POPULATIONS, ELEMENTS_TO_MIGRATE / POPULATIONS, GENERATIONS, MIGRATION_FREQUENCY);
 
 		f = fopen(buf, "w");
 		if (f == NULL)
@@ -1449,8 +1464,13 @@ int main(void) {
 			gpuErrchk(cudaPeekAtLastError());
 
 			/** Migrate elements **/
-			migrate(i, MIGRATION_FREQUENCY, d_population, d_chosenIndividuals);
-
+			if (SELECTION == CELLULAR){
+				randomMigrationIndices << <(POPULATION + 511) / 512, 512 >> > (d_migrationIndices, devStates);
+				migrate(i, MIGRATION_FREQUENCY, d_population, d_migrationIndices);
+			}
+			else{
+				migrate(i, MIGRATION_FREQUENCY, d_population, d_chosenIndividuals);
+			}
 			/** Show progress in console **/
 			print_progress((float)i / (float)GENERATIONS, h_bestFitness);
 			gpuErrchk(cudaPeekAtLastError());
@@ -1505,6 +1525,7 @@ int main(void) {
 		cudaFree(d_singleLinkDistances);
 
 		cudaFree(d_chosenIndividuals);
+		cudaFree(d_migrationIndices);
 
 		cudaFree(d_sumFitness);
 
