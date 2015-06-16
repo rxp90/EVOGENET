@@ -45,14 +45,26 @@ struct inverse
 #ifndef __CUDACC__  
 #define __CUDACC__
 #endif
-
 #define IDX2C(i, j, ld) (((j)*(ld))+(i))
-#define MAX_INPUTS 32
 
-#define POPULATIONS 1	//DO NOT FORGET TO FILL LAMDA_HOST PROPERLY
+#define ROULETTE 0
+#define ELITE 1
+#define CELLULAR 2
+
+#define MOST 0
+#define ABSOLUTE_REPRESSOR 1
+#define JOINT_ACTIVATORS 2
+#define JOINT_REPRESSORS 3
+
+#define MAX_INPUTS 32
 #define RULES_PER_NODE 1
 #define NODES 32
-#define POPULATION (512*POPULATIONS)
+
+#define TOTAL_LINKS (NODES*MAX_INPUTS)
+
+#define POPULATIONS 2	//DO NOT FORGET TO FILL LAMDA_HOST PROPERLY
+
+#define POPULATION (1024*POPULATIONS)
 
 #define COLS 32		// Square root of a single population size
 #define ELITE_MEMBERS (POPULATION)
@@ -62,22 +74,12 @@ struct inverse
 #define MAX_CONNECTIVITY_DISTANCE 0.1
 
 #define GENERATIONS 100000
-#define EXECUTIONS 3
+#define EXECUTIONS 4
 #define LINK_MUTATION_PROB 0.001  
 #define RULE_MUTATION_PROB 0.001
+#define SELECTION CELLULAR
 
-#define TOTAL_LINKS (NODES*MAX_INPUTS)
 
-#define ROULETTE 0
-#define ELITE 1
-#define CELLULAR 2
-
-#define SELECTION ELITE
-
-#define MOST 0
-#define ABSOLUTE_REPRESSOR 1
-#define JOINT_ACTIVATORS 2
-#define JOINT_REPRESSORS 3
 
 typedef struct
 {
@@ -101,7 +103,7 @@ network GOAL_NETWORK_HOST = {
 	{ 1, 0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
 };
 
-float LAMBDA_HOST[POPULATIONS] = { .9f };
+float LAMBDA_HOST[POPULATIONS] = { .9f, .9f };
 
 __constant__ float LAMBDA_VALUES[POPULATIONS];
 
@@ -1180,9 +1182,10 @@ void runEliteSelection(thrust::device_ptr<float> populationFitness, thrust::devi
 /// <param name="populationFitness">The population fitness.</param>
 /// <param name="orderedIndices">The ordered indices.</param>
 void runEliteCellularSelection(float populationFitness[], int selectedIndices[]){
+#if (SELECTION == CELLULAR)
 	cellularNeighborhood < POPULATION / POPULATIONS, POPULATION / POPULATIONS, COLS> << <POPULATIONS, POPULATION / POPULATIONS >> >(populationFitness, selectedIndices);
 	gpuErrchk(cudaPeekAtLastError());
-
+#endif
 }
 
 /// <summary>
@@ -1405,7 +1408,7 @@ int main(void) {
 		/** Create a file to save algorithm's evolution **/
 
 		char buf[0x100];
-		_snprintf(buf, sizeof(buf), "P-Sexec%d%s_pob%dpops%d_MIGRs%d_gen%dfreq%d.csv", e, "EL", POPULATION, POPULATIONS, ELEMENTS_TO_MIGRATE / POPULATIONS, GENERATIONS, MIGRATION_FREQUENCY);
+		_snprintf(buf, sizeof(buf), "P-Sexec%d%s_pob%dpops%d_MIGRs%d_gen%dfreq%d.csv", e, "CE", POPULATION, POPULATIONS, ELEMENTS_TO_MIGRATE / POPULATIONS, GENERATIONS, MIGRATION_FREQUENCY);
 
 		f = fopen(buf, "w");
 		if (f == NULL)
