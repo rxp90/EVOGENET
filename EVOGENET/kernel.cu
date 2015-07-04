@@ -47,6 +47,8 @@ struct inverse
 #endif
 #define IDX2C(i, j, ld) (((j)*(ld))+(i))
 
+/* Do NOT modify this constants */
+
 #define ROULETTE 0
 #define ELITE 1
 #define CELLULAR 2
@@ -62,6 +64,8 @@ struct inverse
 
 #define TOTAL_LINKS (NODES*MAX_INPUTS)
 
+/********************************/
+/* Modify this constants depending on your needs */
 #define POPULATIONS 2	//DO NOT FORGET TO FILL LAMDA_HOST PROPERLY
 
 #define POPULATION (1024*POPULATIONS)
@@ -78,8 +82,6 @@ struct inverse
 #define LINK_MUTATION_PROB 0.001  
 #define RULE_MUTATION_PROB 0.001
 #define SELECTION CELLULAR
-
-
 
 typedef struct
 {
