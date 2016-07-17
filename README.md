@@ -1,6 +1,6 @@
 # cuEVOGENET
 
-This is a Final-year Project for a BSc Computer Engineering at Universidad de Sevilla, passed with distinction and looking forward to presenting it to Best Project Award as suggested by the university committee.
+Master Thesis for a BSc+MSc Computer Engineering at Universidad de Sevilla, passed with distinction and looking forward to presenting it to Best Project Award as suggested by the university committee.
 
 cuEVOGENET implements a Genetic Algorithm proposed by D. Aguilar-Hidalgo et.at. on [COMPLEX NETWORKS EVOLUTIONARY DYNAMICS USING GENETIC ALGORITHMS] [1]
 
