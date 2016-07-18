@@ -1,6 +1,7 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include <stdio.h>
+#include <windows.h>
 #include <cuda.h>
 #include <curand.h>
 #include <curand_kernel.h>
@@ -38,7 +39,13 @@ struct inverse
 {
 	__host__ __device__
 		T operator()(const T& x) const {
-		return 1 / x;
+		if (x != 0){
+			return 1 / x;
+		}
+		else{
+			return 0;
+		}
+		
 	}
 };
 
@@ -66,7 +73,7 @@ struct inverse
 
 /********************************/
 /* Modify this constants depending on your needs */
-#define POPULATIONS 2	//DO NOT FORGET TO FILL LAMDA_HOST PROPERLY
+#define POPULATIONS 1	//DO NOT FORGET TO FILL LAMDA_HOST PROPERLY
 
 #define POPULATION (1024*POPULATIONS)
 
@@ -77,7 +84,7 @@ struct inverse
 
 #define MAX_CONNECTIVITY_DISTANCE 0.1
 
-#define GENERATIONS 100000
+#define GENERATIONS 1000
 #define EXECUTIONS 4
 #define LINK_MUTATION_PROB 0.001  
 #define RULE_MUTATION_PROB 0.001
@@ -95,17 +102,17 @@ const unsigned char H_GOAL_NODES[NODES] = { 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 
 network population[POPULATION];
 
 __device__ const network INIT_NETWORK_DEVICE = {
-	{ 1, 0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
+		{ 1, 0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
 };
 
 network INIT_NETWORK_HOST = {
-	{ 1, 0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
+		{ 1, 0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
 };
 network GOAL_NETWORK_HOST = {
-	{ 1, 0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
+		{ 1, 0, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
 };
 
-float LAMBDA_HOST[POPULATIONS] = { .9f, .9f };
+float LAMBDA_HOST[POPULATIONS] = { .9f };
 
 __constant__ float LAMBDA_VALUES[POPULATIONS];
 
@@ -641,7 +648,7 @@ __global__ void generateInitialPopulation(network population[], curandState* glo
 /// <param name="population">The population.</param>
 /// <param name="globalState">curandState</param>
 /// <returns></returns>
-__global__ void mutation(network *population, curandState *globalState)
+__global__ void mutation(network *population, curandState *globalState, float linkMut, float ruleMut)
 {
 
 	const unsigned int individual_index = (blockIdx.x*blockDim.x + threadIdx.x);
@@ -666,7 +673,7 @@ __global__ void mutation(network *population, curandState *globalState)
 
 	if (individual_index < POPULATION){
 
-		if (randoms[0] <= LINK_MUTATION_PROB)
+		if (randoms[0] <= linkMut)
 		{
 			// Random link position
 			individualLinkIndex = randoms[1] * (TOTAL_LINKS);
@@ -679,7 +686,7 @@ __global__ void mutation(network *population, curandState *globalState)
 			population[individual_index].links[individualLinkIndex] = links[localLinkIndex];
 		}
 
-		if (randoms[3] <= RULE_MUTATION_PROB)
+		if (randoms[3] <= ruleMut)
 		{
 			// Random rule position
 			individualRuleIndex = randoms[4] * RULES_PER_NODE*NODES;
@@ -1228,329 +1235,367 @@ __global__ void randomMigrationIndices(int migrationIndices[], curandState* glob
 
 int main(void) {
 
+	float rulesInitialMut = 0;
+	float rulesFinalMut = 1;
+	float rmutSteps = 0.05;
 
-	for (int e = 0; e < EXECUTIONS; e++){		// Runs EXECUTIONS independent runs
+	float linksInitialMut = 0;
+	float linksFinalMut = 1;
+	float lmutSteps = 0.05;
 
-		float time;								// Holds time for current execution
-		cudaEvent_t start, stop;				// CUDA Timers
 
-		/*
-		Timers creation
-		*/
-		HANDLE_ERROR(cudaEventCreate(&start));
-		HANDLE_ERROR(cudaEventCreate(&stop));
-		HANDLE_ERROR(cudaEventRecord(start));
-		/*
-		File for the output
-		*/
-		FILE *f;
+	char folderName[0x100];
+	_snprintf(folderName, sizeof(folderName), "Pruebas p%d-g%d-e%d", POPULATION, GENERATIONS, EXECUTIONS);
 
-		/*
-		cuBLAS variables
-		*/
+	CreateDirectory(folderName, NULL);
+	
 
-		cudaError_t cudastat;
-		cublasStatus_t stat;
+	for (float ruleMutProb = rulesInitialMut; ruleMutProb < rulesFinalMut; ruleMutProb += rmutSteps){
+		for (float linkMutProb = linksInitialMut; linkMutProb < linksFinalMut; linkMutProb += lmutSteps){
 
-		cublasHandle_t handle;
-		stat = cublasCreate(&handle);
+			float avgFitness = 0;
+			FILE *f2;
 
-		/*
-		Genetic algorithm arrays
-		*/
+			for (int e = 0; e < EXECUTIONS; e++){		// Runs EXECUTIONS independent runs
 
-		/*
-		Population
-		*/
-
-		network *d_population;	// Network population
-
-		HANDLE_ERROR(
-			cudaMalloc(&d_population, POPULATION*sizeof(network)))
-			;
+				float time;								// Holds time for current execution
+				cudaEvent_t start, stop;				// CUDA Timers
 
-		/*
-		Fitness
-		*/
+				/*
+				Timers creation
+				*/
+				HANDLE_ERROR(cudaEventCreate(&start));
+				HANDLE_ERROR(cudaEventCreate(&stop));
+				HANDLE_ERROR(cudaEventRecord(start));
+				/*
+				File for the output
+				*/
+				FILE *f;
 
-		HANDLE_ERROR(
-			cudaMemcpyToSymbol(LAMBDA_VALUES, &LAMBDA_HOST, sizeof(float)*POPULATIONS));		// Lambda values for each population
+				/*
+				cuBLAS variables
+				*/
 
-		char * d_goalLinks;					// Goal links
-		HANDLE_ERROR(
-			cudaMalloc(&d_goalLinks, TOTAL_LINKS*sizeof(char)));
-		HANDLE_ERROR(
-			cudaMemcpy(d_goalLinks, &GOAL_NETWORK_HOST.links, sizeof(char)*TOTAL_LINKS, cudaMemcpyHostToDevice));
+				cudaError_t cudastat;
+				cublasStatus_t stat;
 
-		char * d_initNodes;					// Initial nodes
-		HANDLE_ERROR(
-			cudaMalloc(&d_initNodes, TOTAL_LINKS*sizeof(char)));
-		HANDLE_ERROR(
-			cudaMemcpy(d_initNodes, H_INIT_NODES, sizeof(char)*NODES, cudaMemcpyHostToDevice));
+				cublasHandle_t handle;
+				stat = cublasCreate(&handle);
 
-		char * d_goalNodes;					// Goal nodes
-		HANDLE_ERROR(
-			cudaMalloc(&d_goalNodes, NODES*sizeof(char)));
-		HANDLE_ERROR(
-			cudaMemcpy(d_goalNodes, &H_GOAL_NODES, sizeof(char)*NODES, cudaMemcpyHostToDevice));
+				/*
+				Genetic algorithm arrays
+				*/
 
-		network h_bestIndividual;				// Best individual for each generation
-		float h_bestFitness = 1.0;				// Fitness of the best individual
+				/*
+				Population
+				*/
 
-		float *d_populationFitness;				// Holds total population fitness for each generation
+				network *d_population;	// Network population
 
-		HANDLE_ERROR(
-			cudaMalloc(&d_populationFitness, POPULATION*sizeof(float)));
-		thrust::device_ptr<float> device_ptr_fitness = thrust::device_pointer_cast(d_populationFitness);
+				HANDLE_ERROR(
+					cudaMalloc(&d_population, POPULATION*sizeof(network)))
+					;
 
-		float* d_individualsLinkFitness;					// Link normalized fitness of each individual
-		float* d_individualsNodeFitness;					// Node normalized fitness of each individual
+				/*
+				Fitness
+				*/
 
-		HANDLE_ERROR(
-			cudaMalloc(&d_individualsLinkFitness, POPULATION*sizeof(float)));
-		HANDLE_ERROR(
-			cudaMalloc(&d_individualsNodeFitness, POPULATION*sizeof(float)));
+				HANDLE_ERROR(
+					cudaMemcpyToSymbol(LAMBDA_VALUES, &LAMBDA_HOST, sizeof(float)*POPULATIONS));		// Lambda values for each population
 
-		/*
-		Vectors filled with ones used by cuBLAS matrix multiplication to sum all node/links distances.
-		If we multiply a matrix by a ones vector, we will obtain the sum of all its rows.
-		*/
+				char * d_goalLinks;					// Goal links
+				HANDLE_ERROR(
+					cudaMalloc(&d_goalLinks, TOTAL_LINKS*sizeof(char)));
+				HANDLE_ERROR(
+					cudaMemcpy(d_goalLinks, &GOAL_NETWORK_HOST.links, sizeof(char)*TOTAL_LINKS, cudaMemcpyHostToDevice));
 
-		float * d_linksOnesVector, *d_nodesOnesVector;
+				char * d_initNodes;					// Initial nodes
+				HANDLE_ERROR(
+					cudaMalloc(&d_initNodes, TOTAL_LINKS*sizeof(char)));
+				HANDLE_ERROR(
+					cudaMemcpy(d_initNodes, H_INIT_NODES, sizeof(char)*NODES, cudaMemcpyHostToDevice));
 
-		float* x_links = new float[TOTAL_LINKS];
+				char * d_goalNodes;					// Goal nodes
+				HANDLE_ERROR(
+					cudaMalloc(&d_goalNodes, NODES*sizeof(char)));
+				HANDLE_ERROR(
+					cudaMemcpy(d_goalNodes, &H_GOAL_NODES, sizeof(char)*NODES, cudaMemcpyHostToDevice));
 
-		for (int i = 0; i < TOTAL_LINKS; i++)
-		{
-			x_links[i] = 1;
-		}
+				network h_bestIndividual;				// Best individual for each generation
+				float h_bestFitness = 1.0;				// Fitness of the best individual
 
-		float* x_nodes = new float[NODES];
+				float *d_populationFitness;				// Holds total population fitness for each generation
 
-		for (int i = 0; i < NODES; i++)
-		{
-			x_nodes[i] = 1;
-		}
+				HANDLE_ERROR(
+					cudaMalloc(&d_populationFitness, POPULATION*sizeof(float)));
+				thrust::device_ptr<float> device_ptr_fitness = thrust::device_pointer_cast(d_populationFitness);
 
-		HANDLE_ERROR(
-			cudaMalloc(&d_linksOnesVector, TOTAL_LINKS*sizeof(float)));
-		HANDLE_ERROR(
-			cudaMemcpy(d_linksOnesVector, x_links, TOTAL_LINKS*sizeof(float), cudaMemcpyHostToDevice));
+				float* d_individualsLinkFitness;					// Link normalized fitness of each individual
+				float* d_individualsNodeFitness;					// Node normalized fitness of each individual
 
-		HANDLE_ERROR(
-			cudaMalloc(&d_nodesOnesVector, NODES*sizeof(float)));
-		HANDLE_ERROR(
-			cudaMemcpy(d_nodesOnesVector, x_nodes, NODES*sizeof(float), cudaMemcpyHostToDevice));
+				HANDLE_ERROR(
+					cudaMalloc(&d_individualsLinkFitness, POPULATION*sizeof(float)));
+				HANDLE_ERROR(
+					cudaMalloc(&d_individualsNodeFitness, POPULATION*sizeof(float)));
 
-		free(x_links);
-		free(x_nodes);
+				/*
+				Vectors filled with ones used by cuBLAS matrix multiplication to sum all node/links distances.
+				If we multiply a matrix by a ones vector, we will obtain the sum of all its rows.
+				*/
 
-		float *d_singleNodeDistances, *d_singleLinkDistances;	// Node and link distances PER NETWORK, that is, a[i] == 1 if i link/node value is different from the same node/link in goal network
+				float * d_linksOnesVector, *d_nodesOnesVector;
 
-		HANDLE_ERROR(
-			cudaMalloc(&d_singleNodeDistances, POPULATION * NODES * sizeof(float)));
-		HANDLE_ERROR(
-			cudaMalloc(&d_singleLinkDistances, POPULATION * TOTAL_LINKS * sizeof(float)));
+				float* x_links = new float[TOTAL_LINKS];
 
-		int * d_chosenIndividuals;					// Indices of the chosen inviduals
+				for (int i = 0; i < TOTAL_LINKS; i++)
+				{
+					x_links[i] = 1;
+				}
 
-		HANDLE_ERROR(
-			cudaMalloc(&d_chosenIndividuals, ELITE_MEMBERS*sizeof(int)));
-		/*************************************/
-		/*************************************/
-		/*************************************/
-		int * d_migrationIndices;
-		HANDLE_ERROR(
-			cudaMalloc(&d_migrationIndices, ELITE_MEMBERS*sizeof(int)));
-		/*************************************/
-		/*************************************/
+				float* x_nodes = new float[NODES];
 
-		/*************************************/
-		thrust::device_ptr<int> dev_indices = thrust::device_pointer_cast(d_chosenIndividuals);
+				for (int i = 0; i < NODES; i++)
+				{
+					x_nodes[i] = 1;
+				}
 
-		float * d_sumFitness;					// Holds total fitness of each population
-		HANDLE_ERROR(
-			cudaMalloc(&d_sumFitness, POPULATIONS*sizeof(float)));
+				HANDLE_ERROR(
+					cudaMalloc(&d_linksOnesVector, TOTAL_LINKS*sizeof(float)));
+				HANDLE_ERROR(
+					cudaMemcpy(d_linksOnesVector, x_links, TOTAL_LINKS*sizeof(float), cudaMemcpyHostToDevice));
 
-		thrust::device_ptr<float> dev_fitnessSum = thrust::device_pointer_cast(d_sumFitness);
+				HANDLE_ERROR(
+					cudaMalloc(&d_nodesOnesVector, NODES*sizeof(float)));
+				HANDLE_ERROR(
+					cudaMemcpy(d_nodesOnesVector, x_nodes, NODES*sizeof(float), cudaMemcpyHostToDevice));
 
-		int *d_linkCrossPoints, *d_rulesCrossPoints;				// Arrays for random crossover indices
-		HANDLE_ERROR(
-			cudaMalloc(&d_linkCrossPoints, (ELITE_MEMBERS / 2)*sizeof(int)));
-		HANDLE_ERROR(
-			cudaMalloc(&d_rulesCrossPoints, (ELITE_MEMBERS / 2)*sizeof(int)));
+				free(x_links);
+				free(x_nodes);
 
+				float *d_singleNodeDistances, *d_singleLinkDistances;	// Node and link distances PER NETWORK, that is, a[i] == 1 if i link/node value is different from the same node/link in goal network
 
-		/*
-		Misc
-		*/
+				HANDLE_ERROR(
+					cudaMalloc(&d_singleNodeDistances, POPULATION * NODES * sizeof(float)));
+				HANDLE_ERROR(
+					cudaMalloc(&d_singleLinkDistances, POPULATION * TOTAL_LINKS * sizeof(float)));
 
-		curandState* devStates;					// cuRAND states
+				int * d_chosenIndividuals;					// Indices of the chosen inviduals
 
-		HANDLE_ERROR(
-			cudaMalloc(&devStates, POPULATION * 1024 * sizeof(curandState)));
+				HANDLE_ERROR(
+					cudaMalloc(&d_chosenIndividuals, ELITE_MEMBERS*sizeof(int)));
+				/*************************************/
+				/*************************************/
+				/*************************************/
+				int * d_migrationIndices;
+				HANDLE_ERROR(
+					cudaMalloc(&d_migrationIndices, ELITE_MEMBERS*sizeof(int)));
+				/*************************************/
+				/*************************************/
 
-		/** Streams **/
-		cudaStream_t stream0, stream1, stream2, stream3, stream4;
-		cudaStreamCreate(&stream0);
-		cudaStreamCreate(&stream1);
-		cudaStreamCreate(&stream2);
-		cudaStreamCreate(&stream3);
-		cudaStreamCreate(&stream4);
+				/*************************************/
+				thrust::device_ptr<int> dev_indices = thrust::device_pointer_cast(d_chosenIndividuals);
 
-		/** Calculate initial connectivity and save it in contant memory **/
+				float * d_sumFitness;					// Holds total fitness of each population
+				HANDLE_ERROR(
+					cudaMalloc(&d_sumFitness, POPULATIONS*sizeof(float)));
 
-		int h_initNullLinks = thrust::count(INIT_NETWORK_HOST.links, INIT_NETWORK_HOST.links + TOTAL_LINKS, 0);	// Null links in initial network
+				thrust::device_ptr<float> dev_fitnessSum = thrust::device_pointer_cast(d_sumFitness);
 
-		const float h_initConnectivity = (TOTAL_LINKS - (float)h_initNullLinks) / (TOTAL_LINKS);				// Connectivity of initial network
+				int *d_linkCrossPoints, *d_rulesCrossPoints;				// Arrays for random crossover indices
+				HANDLE_ERROR(
+					cudaMalloc(&d_linkCrossPoints, (ELITE_MEMBERS / 2)*sizeof(int)));
+				HANDLE_ERROR(
+					cudaMalloc(&d_rulesCrossPoints, (ELITE_MEMBERS / 2)*sizeof(int)));
 
-		HANDLE_ERROR(
-			cudaMemcpyToSymbol(INIT_CONNECTIVITY, &h_initConnectivity, sizeof(float)));							// Save it in constant memory
 
-		/** Create a file to save algorithm's evolution **/
+				/*
+				Misc
+				*/
 
-		char buf[0x100];
-		_snprintf(buf, sizeof(buf), "P-Sexec%d%s_pob%dpops%d_MIGRs%d_gen%dfreq%d.csv", e, "CE", POPULATION, POPULATIONS, ELEMENTS_TO_MIGRATE / POPULATIONS, GENERATIONS, MIGRATION_FREQUENCY);
+				curandState* devStates;					// cuRAND states
 
-		f = fopen(buf, "w");
-		if (f == NULL)
-		{
-			printf("Error opening file!\n");
-			exit(1);
-		}
+				HANDLE_ERROR(
+					cudaMalloc(&devStates, POPULATION * 1024 * sizeof(curandState)));
 
-		/** Print current configuration **/
+				/** Streams **/
+				cudaStream_t stream0, stream1, stream2, stream3, stream4;
+				cudaStreamCreate(&stream0);
+				cudaStreamCreate(&stream1);
+				cudaStreamCreate(&stream2);
+				cudaStreamCreate(&stream3);
+				cudaStreamCreate(&stream4);
 
-		printParameters();
+				/** Calculate initial connectivity and save it in constant memory **/
 
-		/** Setup random number sequences **/
+				int h_initNullLinks = thrust::count(INIT_NETWORK_HOST.links, INIT_NETWORK_HOST.links + TOTAL_LINKS, 0);	// Null links in initial network
 
-		setupCurandDiffSeed << < POPULATION * 2, 512 >> > (devStates);
-		gpuErrchk(cudaPeekAtLastError());
+				const float h_initConnectivity = (TOTAL_LINKS - (float)h_initNullLinks) / (TOTAL_LINKS);				// Connectivity of initial network
 
-		/** Generate initial population **/
+				HANDLE_ERROR(
+					cudaMemcpyToSymbol(INIT_CONNECTIVITY, &h_initConnectivity, sizeof(float)));							// Save it in constant memory
 
-		generateInitialPopulation << <(POPULATION + 1023) / 512, 512 >> >(d_population, devStates);
-		gpuErrchk(cudaPeekAtLastError());
+				/** Create a file to save algorithm's evolution **/
 
-		/** Initial elementes indices: 0, 1, 2, 3... **/
+				char buf[0x100];
+				_snprintf(buf, sizeof(buf), "%s\\P-Sexec%d%s_pob%dpops%d_MIGRs%d_gen%dfreq%d.csv", folderName, e, "CE", POPULATION, POPULATIONS, ELEMENTS_TO_MIGRATE / POPULATIONS, GENERATIONS, MIGRATION_FREQUENCY);
 
-		sequence << <(POPULATION + 1023) / 1024, 1024 >> >(d_chosenIndividuals);
-		gpuErrchk(cudaPeekAtLastError())
+				f = fopen(buf, "w");
+				if (f == NULL)
+				{
+					printf("Error opening file!\n");
+					exit(1);
+				}
 
-			/** Random link crossover indeces **/
+				/** Print current configuration **/
 
-			generateLinkCrossPoints << < (ELITE_MEMBERS / 2 + 447) / 448, 448 >> >(d_linkCrossPoints, devStates);
-		gpuErrchk(cudaPeekAtLastError());
+				printParameters();
 
-		for (int i = 0; i < GENERATIONS && h_bestFitness != 0; i++){
+				/** Setup random number sequences **/
 
-			/** Evaluate population **/
-			computeFitness(stream3, stream4, d_population, d_singleLinkDistances, d_linksOnesVector, d_individualsLinkFitness, handle, d_singleNodeDistances, d_nodesOnesVector, d_individualsNodeFitness, d_populationFitness, d_goalLinks, d_initNodes, d_goalNodes);
+				setupCurandDiffSeed << < POPULATION * 2, 512 >> > (devStates);
+				gpuErrchk(cudaPeekAtLastError());
 
-			/** Save best individual **/
-			updateBestIndividual(d_population, d_populationFitness, i, f, &h_bestFitness, &h_bestIndividual, handle);
-			gpuErrchk(cudaPeekAtLastError());
+				/** Generate initial population **/
 
-			/** Parent selection **/
+				generateInitialPopulation << <(POPULATION + 1023) / 512, 512 >> >(d_population, devStates);
+				gpuErrchk(cudaPeekAtLastError());
 
-			switch (SELECTION){
-			case ELITE:
-				runEliteSelection(device_ptr_fitness, dev_indices);
-				break;
-			case ROULETTE:
-				runRouletteSelection(d_populationFitness, device_ptr_fitness, d_chosenIndividuals, devStates, dev_fitnessSum);
-				break;
-			case CELLULAR:
-				runEliteCellularSelection(d_populationFitness, d_chosenIndividuals);
-				break;
+				/** Initial elementes indices: 0, 1, 2, 3... **/
+
+				sequence << <(POPULATION + 1023) / 1024, 1024 >> >(d_chosenIndividuals);
+				gpuErrchk(cudaPeekAtLastError())
+
+					/** Random link crossover indeces **/
+
+					generateLinkCrossPoints << < (ELITE_MEMBERS / 2 + 447) / 448, 448 >> >(d_linkCrossPoints, devStates);
+				gpuErrchk(cudaPeekAtLastError());
+
+				for (int i = 0; i < GENERATIONS && h_bestFitness != 0; i++){
+
+					/** Evaluate population **/
+					computeFitness(stream3, stream4, d_population, d_singleLinkDistances, d_linksOnesVector, d_individualsLinkFitness, handle, d_singleNodeDistances, d_nodesOnesVector, d_individualsNodeFitness, d_populationFitness, d_goalLinks, d_initNodes, d_goalNodes);
+
+					/** Save best individual **/
+					updateBestIndividual(d_population, d_populationFitness, i, f, &h_bestFitness, &h_bestIndividual, handle);
+					gpuErrchk(cudaPeekAtLastError());
+
+					/** Parent selection **/
+
+					switch (SELECTION){
+					case ELITE:
+						runEliteSelection(device_ptr_fitness, dev_indices);
+						break;
+					case ROULETTE:
+						runRouletteSelection(d_populationFitness, device_ptr_fitness, d_chosenIndividuals, devStates, dev_fitnessSum);
+						break;
+					case CELLULAR:
+						runEliteCellularSelection(d_populationFitness, d_chosenIndividuals);
+						break;
+					}
+
+					gpuErrchk(cudaPeekAtLastError());
+
+					/** Migrate elements **/
+					if (SELECTION == CELLULAR){
+						randomMigrationIndices << <(POPULATION + 511) / 512, 512 >> > (d_migrationIndices, devStates);
+						migrate(i, MIGRATION_FREQUENCY, d_population, d_migrationIndices);
+					}
+					else{
+						migrate(i, MIGRATION_FREQUENCY, d_population, d_chosenIndividuals);
+					}
+					/** Show progress in console **/
+					print_progress((float)i / (float)GENERATIONS, h_bestFitness);
+					gpuErrchk(cudaPeekAtLastError());
+
+					/** Crossover **/
+					crossover<512, POPULATION / POPULATIONS, SELECTION> << <ELITE_MEMBERS / 2, (TOTAL_LINKS) / 2, 0, stream2 >> >(d_population, d_chosenIndividuals, d_linkCrossPoints);
+					gpuErrchk(cudaPeekAtLastError());
+
+					/** Mutation **/
+					mutation << <(POPULATION + 32 * 5 + 1) / (32 * 5), 32 * 5, 0, stream0 >> >(d_population, devStates, linkMutProb, ruleMutProb);
+					gpuErrchk(cudaPeekAtLastError());
+
+					/** Reset individual indices for next generation **/
+					sequence << <(POPULATION + 1023) / 1024, 1024, 0, stream1 >> >(d_chosenIndividuals);
+					gpuErrchk(cudaPeekAtLastError());
+
+					/** Generate new crossover indices **/
+					generateLinkCrossPoints << < (ELITE_MEMBERS / 2 + 447) / 448, 448, 0, stream2 >> >(d_linkCrossPoints, devStates);
+					gpuErrchk(cudaPeekAtLastError());
+
+					//	gpuErrchk( cudaDeviceSynchronize() );
+				}
+
+				avgFitness += h_bestFitness;
+
+				/** Stop timers **/
+				HANDLE_ERROR(cudaEventRecord(stop));
+				HANDLE_ERROR(cudaEventSynchronize(stop));
+				HANDLE_ERROR(cudaEventElapsedTime(&time, start, stop));
+
+				/** Write time and best individual **/
+				fprintf(f, "\nTime to generate:  %3.1f ms \n", time);
+				print_network_file(h_bestIndividual, f);
+
+				/** Close file **/
+				fclose(f);
+
+				/** Free memory **/
+				cudaFree(d_population);
+
+				cudaFree(d_initNodes);
+				cudaFree(d_goalLinks);
+				cudaFree(d_goalNodes);
+
+				cudaFree(d_populationFitness);
+
+				cudaFree(d_individualsLinkFitness);
+				cudaFree(d_individualsNodeFitness);
+
+				cudaFree(d_linksOnesVector);
+				cudaFree(d_nodesOnesVector);
+
+				cudaFree(d_singleNodeDistances);
+				cudaFree(d_singleLinkDistances);
+
+				cudaFree(d_chosenIndividuals);
+				cudaFree(d_migrationIndices);
+
+				cudaFree(d_sumFitness);
+
+				cudaFree(d_linkCrossPoints);
+				cudaFree(d_rulesCrossPoints);
+
+				cudaFree(devStates);
+
+				/** Destroy streams **/
+
+				cudaStreamDestroy(stream0);
+				cudaStreamDestroy(stream1);
+				cudaStreamDestroy(stream2);
+				cudaStreamDestroy(stream3);
+				cudaStreamDestroy(stream4);
+
+				cublasDestroy(handle);
+
+			}
+			char bufAvg[0x100];
+			_snprintf(bufAvg, sizeof(bufAvg), "%s\\POP_%d_lM_%.3f_rM_%.3f_gen_%d.txt", folderName,  POPULATION, linkMutProb, ruleMutProb, GENERATIONS);
+
+			f2 = fopen(bufAvg, "w");
+
+			if (f2 == NULL)
+			{
+				printf("Error opening file!\n");
+				exit(1);
 			}
 
-			gpuErrchk(cudaPeekAtLastError());
-
-			/** Migrate elements **/
-			if (SELECTION == CELLULAR){
-				randomMigrationIndices << <(POPULATION + 511) / 512, 512 >> > (d_migrationIndices, devStates);
-				migrate(i, MIGRATION_FREQUENCY, d_population, d_migrationIndices);
-			}
-			else{
-				migrate(i, MIGRATION_FREQUENCY, d_population, d_chosenIndividuals);
-			}
-			/** Show progress in console **/
-			print_progress((float)i / (float)GENERATIONS, h_bestFitness);
-			gpuErrchk(cudaPeekAtLastError());
-
-			/** Crossover **/
-			crossover<512, POPULATION / POPULATIONS, SELECTION> << <ELITE_MEMBERS / 2, (TOTAL_LINKS) / 2, 0, stream2 >> >(d_population, d_chosenIndividuals, d_linkCrossPoints);
-			gpuErrchk(cudaPeekAtLastError());
-
-			/** Mutation **/
-			mutation << <(POPULATION + 32 * 5 + 1) / (32 * 5), 32 * 5, 0, stream0 >> >(d_population, devStates);
-			gpuErrchk(cudaPeekAtLastError());
-
-			/** Reset individual indices for next generation **/
-			sequence << <(POPULATION + 1023) / 1024, 1024, 0, stream1 >> >(d_chosenIndividuals);
-			gpuErrchk(cudaPeekAtLastError());
-
-			/** Generate new crossover indices **/
-			generateLinkCrossPoints << < (ELITE_MEMBERS / 2 + 447) / 448, 448, 0, stream2 >> >(d_linkCrossPoints, devStates);
-			gpuErrchk(cudaPeekAtLastError());
-
-			//	gpuErrchk( cudaDeviceSynchronize() );
+			fprintf(f2, "%f\n", avgFitness/(float)EXECUTIONS);
+			fclose(f2);
+			cudaDeviceReset();
 		}
 
-		/** Stop timers **/
-		HANDLE_ERROR(cudaEventRecord(stop));
-		HANDLE_ERROR(cudaEventSynchronize(stop));
-		HANDLE_ERROR(cudaEventElapsedTime(&time, start, stop));
 
-		/** Write time and best individual **/
-		fprintf(f, "\nTime to generate:  %3.1f ms \n", time);
-		print_network_file(h_bestIndividual, f);
-
-		/** Close file **/
-		fclose(f);
-
-		/** Free memory **/
-		cudaFree(d_population);
-
-		cudaFree(d_initNodes);
-		cudaFree(d_goalLinks);
-		cudaFree(d_goalNodes);
-
-		cudaFree(d_populationFitness);
-
-		cudaFree(d_individualsLinkFitness);
-		cudaFree(d_individualsNodeFitness);
-
-		cudaFree(d_linksOnesVector);
-		cudaFree(d_nodesOnesVector);
-
-		cudaFree(d_singleNodeDistances);
-		cudaFree(d_singleLinkDistances);
-
-		cudaFree(d_chosenIndividuals);
-		cudaFree(d_migrationIndices);
-
-		cudaFree(d_sumFitness);
-
-		cudaFree(d_linkCrossPoints);
-		cudaFree(d_rulesCrossPoints);
-
-		cudaFree(devStates);
-
-		/** Destroy streams **/
-
-		cudaStreamDestroy(stream0);
-		cudaStreamDestroy(stream1);
-		cudaStreamDestroy(stream2);
-		cudaStreamDestroy(stream3);
-		cudaStreamDestroy(stream4);
-
-		cublasDestroy(handle);
-
+		return 0;
 	}
-
-	cudaDeviceReset();
-	return 0;
 }
